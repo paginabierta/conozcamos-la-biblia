@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrar — Conozcamos la Biblia</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --azul:#1A2D6B; --oro:#C9A84C; --rojo:#8B1A1A; --crema:#FDF8EE; --gris:#F2EDE3; --suave:#6B5B3A; --texto:#1A1208; --ok:#059669; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--texto);}
+
+/* ── LOGIN ── */
+#pantallaLogin{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.login-box{background:white;border-radius:16px;padding:2.5rem;max-width:380px;width:100%;box-shadow:0 8px 40px rgba(26,45,107,0.1);}
+.login-box h1{font-family:'Fraunces',serif;font-size:1.5rem;color:var(--azul);margin-bottom:0.3rem;}
+.login-box p{font-size:0.85rem;color:var(--suave);margin-bottom:1.5rem;}
+.login-box input{width:100%;padding:0.8rem 1rem;border:1.5px solid var(--gris);border-radius:8px;font-size:0.9rem;margin-bottom:0.8rem;font-family:inherit;}
+.login-box input:focus{outline:none;border-color:var(--azul);}
+.login-box button{width:100%;background:var(--azul);color:white;border:none;border-radius:8px;padding:0.85rem;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.login-box button:hover{background:#2E4BA8;}
+#errorLogin{color:var(--rojo);font-size:0.82rem;margin-top:0.8rem;display:none;}
+
+/* ── PANEL ── */
+#panel{display:none;}
+header.top{background:var(--azul);color:white;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.8rem;}
+header.top h1{font-family:'Fraunces',serif;font-size:1.15rem;}
+header.top .acciones{display:flex;gap:0.6rem;align-items:center;}
+header.top a, header.top button{color:white;font-size:0.8rem;text-decoration:none;background:rgba(255,255,255,0.12);padding:0.5rem 1rem;border-radius:6px;border:none;cursor:pointer;font-family:inherit;}
+header.top a:hover, header.top button:hover{background:rgba(255,255,255,0.22);}
+
+.tabs{display:flex;gap:0.3rem;padding:1rem 1.5rem 0;flex-wrap:wrap;background:white;border-bottom:1px solid var(--gris);}
+.tab-btn{padding:0.7rem 1.1rem;border:none;background:none;font-size:0.83rem;font-weight:600;color:var(--suave);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit;}
+.tab-btn.activo{color:var(--azul);border-bottom-color:var(--oro);}
+
+main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
+.seccion{display:none;}
+.seccion.activa{display:block;}
+.card{background:white;border-radius:12px;padding:1.6rem;margin-bottom:1.2rem;box-shadow:0 1px 8px rgba(26,45,107,0.06);}
+.card h2{font-family:'Fraunces',serif;font-size:1.15rem;color:var(--azul);margin-bottom:1rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--suave);margin-bottom:0.35rem;}
+.fg input, .fg select, .fg textarea{width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--gris);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--texto);}
+.fg input[type=color]{padding:0.25rem;height:42px;}
+.fg textarea{resize:vertical;min-height:70px;}
+.fg small{display:block;color:var(--suave);font-size:0.72rem;margin-top:0.3rem;}
+.btn-guardar{background:var(--azul);color:white;border:none;border-radius:8px;padding:0.75rem 1.6rem;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-guardar:hover{background:#2E4BA8;}
+.btn-add{background:var(--gris);color:var(--azul);border:none;border-radius:8px;padding:0.6rem 1.1rem;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-add:hover{background:#e8e0c8;}
+.btn-del{background:rgba(139,26,26,0.08);color:var(--rojo);border:none;border-radius:6px;padding:0.4rem 0.7rem;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-del:hover{background:rgba(139,26,26,0.16);}
+.item-box{border:1.5px solid var(--gris);border-radius:10px;padding:1rem;margin-bottom:0.8rem;}
+.item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;}
+.item-head strong{font-size:0.82rem;color:var(--azul);}
+.tag-testamento{display:inline-flex;gap:0.3rem;margin-bottom:1rem;}
+.tag-testamento button{padding:0.4rem 0.9rem;border-radius:100px;border:1.5px solid var(--gris);background:white;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;color:var(--suave);}
+.tag-testamento button.activo{background:var(--azul);color:white;border-color:var(--azul);}
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ok);color:white;padding:0.85rem 1.4rem;border-radius:8px;font-size:0.85rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.15);opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:999;}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast.err{background:var(--rojo);}
+.aviso-config{background:#FFFBEB;border:1px solid #F5D98A;border-radius:10px;padding:1rem 1.2rem;font-size:0.83rem;color:#7A5A00;margin-bottom:1.5rem;line-height:1.6;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="pantallaLogin">
+  <div class="login-box">
+    <h1>✝ Conozcamos la Biblia</h1>
+    <p>Panel de administración — acceso privado</p>
+    <input type="email" id="loginEmail" placeholder="Correo">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+    <button id="btnLogin">Ingresar</button>
+    <p id="errorLogin"></p>
+  </div>
+</div>
+
+<div id="panel">
+  <header class="top">
+    <h1>✝ Panel — Conozcamos la Biblia</h1>
+    <div class="acciones">
+      <a href="index.html" target="_blank">Ver sitio ↗</a>
+      <button id="btnLogout">Salir</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab-btn activo" data-tab="apariencia">Apariencia</button>
+    <button class="tab-btn" data-tab="portada">Portada</button>
+    <button class="tab-btn" data-tab="homenaje">Homenaje</button>
+    <button class="tab-btn" data-tab="modulos">Módulos</button>
+    <button class="tab-btn" data-tab="clases">Clases en vivo</button>
+    <button class="tab-btn" data-tab="libro">Libro</button>
+    <button class="tab-btn" data-tab="contacto">Contacto</button>
+  </div>
+
+  <main>
+    <div class="aviso-config" id="avisoConfig" style="display:none">
+      ⚠️ Firebase todavía no está configurado (archivo <code>firebase-config.js</code>). Estás viendo el panel, pero los cambios no se guardarán hasta que completes esa configuración.
+    </div>
+
+    <!-- APARIENCIA -->
+    <section class="seccion activa" id="tab-apariencia">
+      <div class="card">
+        <h2>Colores</h2>
+        <div class="grid2">
+          <div class="fg"><label>Rojo (alianza / sacrificio)</label><input type="color" id="colorRojo"></div>
+          <div class="fg"><label>Azul (contemplación / cielo)</label><input type="color" id="colorAzul"></div>
+          <div class="fg"><label>Dorado (Palabra / luz)</label><input type="color" id="colorOro"></div>
+          <div class="fg"><label>Fondo crema</label><input type="color" id="colorCrema"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Tipografía</h2>
+        <div class="fg">
+          <label>Esquema tipográfico</label>
+          <select id="fuenteEsquema">
+            <option value="manuscrito">Manuscrito iluminado — Fraunces + DM Sans (el actual)</option>
+            <option value="clasico">Clásico elegante — Playfair Display + Inter</option>
+            <option value="ligero">Ligero clásico — Cormorant Garamond + Work Sans</option>
+            <option value="calido">Cálido pastoral — Spectral + Nunito Sans</option>
+          </select>
+          <small>Cambia el estilo de letra de todo el sitio con un clic.</small>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Logo</h2>
+        <div class="grid2">
+          <div class="fg"><label>Icono (un emoji o símbolo)</label><input type="text" id="logoIcono" maxlength="3"></div>
+          <div class="fg"><label>Título del sitio</label><input type="text" id="logoTitulo"></div>
+        </div>
+        <div class="fg"><label>Subtítulo</label><input type="text" id="logoSubtitulo"></div>
+      </div>
+      <button class="btn-guardar" onclick="guardarApariencia()">Guardar apariencia</button>
+    </section>
+
+    <!-- PORTADA -->
+    <section class="seccion" id="tab-portada">
+      <div class="card">
+        <h2>Portada (hero)</h2>
+        <div class="fg"><label>Etiqueta superior</label><input type="text" id="heroEtiqueta"></div>
+        <div class="fg"><label>Título principal</label><input type="text" id="heroTitulo"></div>
+        <div class="fg"><label>Palabra del título a destacar en dorado</label><input type="text" id="heroTituloEnfasis"></div>
+        <div class="fg"><label>Subtítulo</label><textarea id="heroSubtitulo"></textarea></div>
+        <div class="fg"><label>Línea de autor / homenaje</label><input type="text" id="heroAutor"></div>
+      </div>
+      <div class="card">
+        <h2>Estadísticas de la portada</h2>
+        <div class="grid2">
+          <div class="fg"><label>Número 1</label><input type="text" id="heroStat1Num"></div>
+          <div class="fg"><label>Etiqueta 1</label><input type="text" id="heroStat1Label"></div>
+          <div class="fg"><label>Número 2</label><input type="text" id="heroStat2Num"></div>
+          <div class="fg"><label>Etiqueta 2</label><input type="text" id="heroStat2Label"></div>
+          <div class="fg"><label>Número 3</label><input type="text" id="heroStat3Num"></div>
+          <div class="fg"><label>Etiqueta 3</label><input type="text" id="heroStat3Label"></div>
+        </div>
+      </div>
+      <button class="btn-guardar" onclick="guardarPortada()">Guardar portada</button>
+    </section>
+
+    <!-- HOMENAJE -->
+    <section class="seccion" id="tab-homenaje">
+      <div class="card">
+        <h2>Homenaje al Padre Álvaro</h2>
+        <div class="fg"><label>Nombre completo</label><input type="text" id="homenajeNombre"></div>
+        <div class="fg"><label>Cargo / descripción corta</label><input type="text" id="homenajeCargo"></div>
+        <div class="fg"><label>Texto del homenaje</label><textarea id="homenajeTexto" style="min-height:160px"></textarea></div>
+        <div class="fg"><label>URL de foto (opcional — déjalo vacío para usar el ícono ✝)</label><input type="text" id="homenajeFoto" placeholder="https://..."></div>
+      </div>
+      <div class="card">
+        <h2>Versículo separador</h2>
+        <div class="fg"><label>Cita bíblica o de un santo</label><textarea id="versiculoTexto"></textarea></div>
+        <div class="fg"><label>Atribución</label><input type="text" id="versiculoCita"></div>
+      </div>
+      <button class="btn-guardar" onclick="guardarHomenaje()">Guardar homenaje</button>
+    </section>
+
+    <!-- MÓDULOS -->
+    <section class="seccion" id="tab-modulos">
+      <div class="card">
+        <h2>Módulos del curso</h2>
+        <p style="font-size:0.82rem;color:var(--suave);margin-bottom:1rem">Un módulo por capítulo del libro del Padre Álvaro. Edita el que quieras y presiona "Guardar" en su propia tarjeta.</p>
+        <div class="tag-testamento">
+          <button class="activo" data-t="AT" onclick="filtrarModulos('AT',this)">📜 Antiguo Testamento</button>
+          <button data-t="NT" onclick="filtrarModulos('NT',this)">✝️ Nuevo Testamento</button>
+        </div>
+        <div id="listaModulos"></div>
+        <button class="btn-add" onclick="agregarModulo()">+ Agregar módulo</button>
+      </div>
+    </section>
+
+    <!-- CLASES -->
+    <section class="seccion" id="tab-clases">
+      <div class="card">
+        <h2>Clases en vivo (Google Meet)</h2>
+        <p style="font-size:0.82rem;color:var(--suave);margin-bottom:1rem">El orden de esta lista es el orden en que aparecen en la tabla del sitio.</p>
+        <div id="listaClases"></div>
+        <button class="btn-add" onclick="agregarClase()">+ Agregar clase</button>
+      </div>
+      <div class="card">
+        <h2>Datos generales de las clases</h2>
+        <div class="grid2">
+          <div class="fg"><label>Frecuencia</label><input type="text" id="meetFrecuencia"></div>
+          <div class="fg"><label>Duración</label><input type="text" id="meetDuracion"></div>
+          <div class="fg"><label>Dispositivos</label><input type="text" id="meetDispositivos"></div>
+          <div class="fg"><label>Acceso</label><input type="text" id="meetAcceso"></div>
+          <div class="fg"><label>Correo de contacto</label><input type="text" id="meetContacto"></div>
+          <div class="fg"><label>Link de Google Meet</label><input type="text" id="meetLink"></div>
+        </div>
+        <div class="fg"><label>Título "Cómo funciona"</label><input type="text" id="comoTitulo"></div>
+        <div class="fg"><label>Subtítulo "Cómo funciona"</label><textarea id="comoSub"></textarea></div>
+        <button class="btn-guardar" onclick="guardarClasesGeneral()">Guardar datos generales</button>
+      </div>
+    </section>
+
+    <!-- LIBRO -->
+    <section class="seccion" id="tab-libro">
+      <div class="card">
+        <h2>Nuevo Testamento</h2>
+        <div class="grid2">
+          <div class="fg"><label>Nombre del libro</label><input type="text" id="libroNTNombre"></div>
+          <div class="fg"><label>Subtítulo</label><input type="text" id="libroNTSub"></div>
+        </div>
+        <div class="fg"><label>URL del PDF (déjalo vacío para mostrar "Próximamente")</label><input type="text" id="libroNTPdf" placeholder="https://..."></div>
+        <div class="fg"><label>URL de imagen de carátula (opcional)</label><input type="text" id="libroNTFoto" placeholder="https://..."></div>
+      </div>
+      <div class="card">
+        <h2>Antiguo Testamento</h2>
+        <div class="grid2">
+          <div class="fg"><label>Nombre del libro</label><input type="text" id="libroATNombre"></div>
+          <div class="fg"><label>Subtítulo</label><input type="text" id="libroATSub"></div>
+        </div>
+        <div class="fg"><label>URL del PDF (déjalo vacío para mostrar "Próximamente")</label><input type="text" id="libroATPdf" placeholder="https://..."></div>
+        <div class="fg"><label>URL de imagen de carátula (opcional)</label><input type="text" id="libroATFoto" placeholder="https://..."></div>
+      </div>
+      <button class="btn-guardar" onclick="guardarLibro()">Guardar libro</button>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="seccion" id="tab-contacto">
+      <div class="card">
+        <h2>Pie de página</h2>
+        <div class="fg"><label>Descripción</label><textarea id="footerDescripcion"></textarea></div>
+        <div class="fg"><label>Correo de contacto</label><input type="text" id="footerEmail"></div>
+        <div class="fg"><label>Línea de derechos (©)</label><input type="text" id="footerCopyright"></div>
+        <div class="fg"><label>Versículo del pie de página</label><input type="text" id="footerVersiculo"></div>
+      </div>
+      <div class="card">
+        <h2>Inscripciones recibidas</h2>
+        <p style="font-size:0.82rem;color:var(--suave);margin-bottom:0.8rem">Personas que se inscribieron desde el formulario del sitio.</p>
+        <div id="listaInscripciones" style="font-size:0.85rem;"></div>
+      </div>
+      <button class="btn-guardar" onclick="guardarContacto()">Guardar contacto</button>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="defaults.js"></script>
+<script>
+let CFG = Object.assign({}, DEFAULT_CONFIG);
+let MODULOS = [];
+let CLASES = [];
+let filtroTestamento = 'AT';
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = err ? 'show err' : 'show';
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+// ── LOGIN ──
+if (firebaseConfig.apiKey.startsWith('PEGA_AQUI')) {
+  document.getElementById('avisoConfig').style.display = 'block';
+}
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('pantallaLogin').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    cargarTodo();
+  } else {
+    document.getElementById('pantallaLogin').style.display = 'flex';
+    document.getElementById('panel').style.display = 'none';
+  }
+});
+document.getElementById('btnLogin').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  auth.signInWithEmailAndPassword(email, pass).catch(err => {
+    document.getElementById('errorLogin').textContent = 'No se pudo ingresar: ' + err.message;
+    document.getElementById('errorLogin').style.display = 'block';
+  });
+});
+document.getElementById('btnLogout').addEventListener('click', () => auth.signOut());
+
+// ── TABS ──
+document.getElementById('tabs').addEventListener('click', e => {
+  if (!e.target.matches('.tab-btn')) return;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('activo'));
+  document.querySelectorAll('.seccion').forEach(s=>s.classList.remove('activa'));
+  e.target.classList.add('activo');
+  document.getElementById('tab-'+e.target.dataset.tab).classList.add('activa');
+});
+
+// ── CARGA ──
+async function cargarTodo() {
+  try {
+    const cfgDoc = await db.collection('config').doc('site').get();
+    CFG = cfgDoc.exists ? Object.assign({}, DEFAULT_CONFIG, cfgDoc.data()) : Object.assign({}, DEFAULT_CONFIG);
+  } catch(e) { toast('No se pudo leer la configuración: '+e.message, true); }
+  rellenarCampos(CFG);
+
+  try {
+    const modSnap = await db.collection('modulos').get();
+    MODULOS = modSnap.empty ? DEFAULT_MODULOS.map((m,i)=>Object.assign({id:'m'+i}, m)) : modSnap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+  } catch(e) { MODULOS = DEFAULT_MODULOS.map((m,i)=>Object.assign({id:'m'+i}, m)); }
+  renderListaModulos();
+
+  try {
+    const clSnap = await db.collection('clases').get();
+    CLASES = clSnap.empty ? DEFAULT_CLASES.map((c,i)=>Object.assign({id:'c'+i, orden:i}, c)) : clSnap.docs.map(d=>Object.assign({id:d.id}, d.data())).sort((a,b)=>(a.orden||0)-(b.orden||0));
+  } catch(e) { CLASES = DEFAULT_CLASES.map((c,i)=>Object.assign({id:'c'+i, orden:i}, c)); }
+  renderListaClases();
+
+  cargarInscripciones();
+}
+
+function rellenarCampos(cfg) {
+  Object.keys(cfg).forEach(k => {
+    const el = document.getElementById(k);
+    if (!el) return;
+    if (Array.isArray(cfg[k])) return; // pasos se maneja aparte si se necesita
+    el.value = cfg[k];
+  });
+}
+
+async function guardarSeccion(campos, nombreSeccion) {
+  const datos = {};
+  campos.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) datos[id] = el.value;
+  });
+  try {
+    await db.collection('config').doc('site').set(datos, { merge: true });
+    Object.assign(CFG, datos);
+    toast('Guardado: ' + nombreSeccion);
+  } catch (e) {
+    toast('No se pudo guardar (revisa firebase-config.js): ' + e.message, true);
+  }
+}
+
+function guardarApariencia(){ guardarSeccion(['colorRojo','colorAzul','colorOro','colorCrema','fuenteEsquema','logoIcono','logoTitulo','logoSubtitulo'], 'apariencia'); }
+function guardarPortada(){ guardarSeccion(['heroEtiqueta','heroTitulo','heroTituloEnfasis','heroSubtitulo','heroAutor','heroStat1Num','heroStat1Label','heroStat2Num','heroStat2Label','heroStat3Num','heroStat3Label'], 'portada'); }
+function guardarHomenaje(){ guardarSeccion(['homenajeNombre','homenajeCargo','homenajeTexto','homenajeFoto','versiculoTexto','versiculoCita'], 'homenaje'); }
+function guardarClasesGeneral(){ guardarSeccion(['meetFrecuencia','meetDuracion','meetDispositivos','meetAcceso','meetContacto','meetLink','comoTitulo','comoSub'], 'datos de clases'); }
+function guardarLibro(){ guardarSeccion(['libroNTNombre','libroNTSub','libroNTPdf','libroNTFoto','libroATNombre','libroATSub','libroATPdf','libroATFoto'], 'libro'); }
+function guardarContacto(){ guardarSeccion(['footerDescripcion','footerEmail','footerCopyright','footerVersiculo'], 'contacto'); }
+
+// ── MÓDULOS ──
+function filtrarModulos(t, btn) {
+  filtroTestamento = t;
+  document.querySelectorAll('.tag-testamento button').forEach(b=>b.classList.remove('activo'));
+  btn.classList.add('activo');
+  renderListaModulos();
+}
+function renderListaModulos() {
+  const cont = document.getElementById('listaModulos');
+  const lista = MODULOS.filter(m=>m.testamento===filtroTestamento).sort((a,b)=>a.orden-b.orden);
+  cont.innerHTML = lista.map(m => `
+    <div class="item-box" data-id="${m.id}">
+      <div class="item-head"><strong>Capítulo ${m.orden} · ${m.testamento}</strong><button class="btn-del" onclick="eliminarModulo('${m.id}')">Eliminar</button></div>
+      <div class="grid2">
+        <div class="fg"><label>Ícono (emoji)</label><input type="text" maxlength="3" data-campo="icono" value="${m.icono||''}"></div>
+        <div class="fg"><label>N.º de capítulo</label><input type="number" data-campo="orden" value="${m.orden}"></div>
+      </div>
+      <div class="fg"><label>Título</label><input type="text" data-campo="titulo" value="${(m.titulo||'').replace(/"/g,'&quot;')}"></div>
+      <div class="fg"><label>Descripción</label><textarea data-campo="descripcion">${m.descripcion||''}</textarea></div>
+      <div class="fg"><label>Subtemas (uno por línea)</label><textarea data-campo="subtemas">${(m.subtemas||[]).join('\n')}</textarea></div>
+      <div class="grid2">
+        <div class="fg"><label>N.º de clases</label><input type="number" data-campo="clases" value="${m.clases||0}"></div>
+        <div class="fg"><label>Horas aprox.</label><input type="number" data-campo="horas" value="${m.horas||0}"></div>
+      </div>
+      <div class="fg"><label>Estado</label>
+        <select data-campo="estado">
+          <option ${m.estado==='Próximamente'?'selected':''}>Próximamente</option>
+          <option ${m.estado==='En curso'?'selected':''}>En curso</option>
+          <option ${m.estado==='Completado'?'selected':''}>Completado</option>
+        </select>
+      </div>
+      <button class="btn-guardar" onclick="guardarModulo('${m.id}')">Guardar este módulo</button>
+    </div>`).join('');
+}
+async function guardarModulo(id) {
+  const box = document.querySelector(`.item-box[data-id="${id}"]`);
+  const m = MODULOS.find(x=>x.id===id);
+  box.querySelectorAll('[data-campo]').forEach(el => {
+    const campo = el.dataset.campo;
+    if (campo === 'subtemas') m[campo] = el.value.split('\n').map(s=>s.trim()).filter(Boolean);
+    else if (campo === 'orden' || campo === 'clases' || campo === 'horas') m[campo] = Number(el.value);
+    else m[campo] = el.value;
+  });
+  try {
+    await db.collection('modulos').doc(id).set(m, { merge: true });
+    toast('Módulo guardado');
+    renderListaModulos();
+  } catch (e) { toast('No se pudo guardar el módulo: '+e.message, true); }
+}
+function agregarModulo() {
+  const id = 'm_' + Date.now();
+  const maxOrden = Math.max(0, ...MODULOS.filter(m=>m.testamento===filtroTestamento).map(m=>m.orden));
+  MODULOS.push({ id, testamento: filtroTestamento, orden: maxOrden+1, icono:'📖', titulo:'Nuevo módulo', descripcion:'', subtemas:[], clases:1, horas:1, estado:'Próximamente' });
+  renderListaModulos();
+}
+async function eliminarModulo(id) {
+  if (!confirm('¿Eliminar este módulo del sitio?')) return;
+  MODULOS = MODULOS.filter(m=>m.id!==id);
+  try { await db.collection('modulos').doc(id).delete(); } catch(e) {}
+  renderListaModulos();
+  toast('Módulo eliminado');
+}
+
+// ── CLASES ──
+function renderListaClases() {
+  const cont = document.getElementById('listaClases');
+  cont.innerHTML = CLASES.map((c,i) => `
+    <div class="item-box" data-id="${c.id}">
+      <div class="item-head"><strong>Clase ${i+1}</strong><button class="btn-del" onclick="eliminarClase('${c.id}')">Eliminar</button></div>
+      <div class="fg"><label>Título</label><input type="text" data-campo="titulo" value="${(c.titulo||'').replace(/"/g,'&quot;')}"></div>
+      <div class="fg"><label>Descripción corta</label><input type="text" data-campo="descripcion" value="${(c.descripcion||'').replace(/"/g,'&quot;')}"></div>
+      <div class="grid2">
+        <div class="fg"><label>Capítulo (ej. NT · Cap. 3)</label><input type="text" data-campo="capitulo" value="${c.capitulo||''}"></div>
+        <div class="fg"><label>Fecha y hora (texto libre)</label><input type="text" data-campo="fecha" value="${c.fecha||''}"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label>Estado</label>
+          <select data-campo="estado">
+            <option ${c.estado==='Próxima'?'selected':''}>Próxima</option>
+            <option ${c.estado==='Grabada'?'selected':''}>Grabada</option>
+          </select>
+        </div>
+        <div class="fg"><label>Link (grabación o Meet)</label><input type="text" data-campo="link" value="${c.link||''}"></div>
+      </div>
+      <button class="btn-guardar" onclick="guardarClase('${c.id}')">Guardar esta clase</button>
+    </div>`).join('');
+}
+async function guardarClase(id) {
+  const box = document.querySelector(`#listaClases .item-box[data-id="${id}"]`);
+  const c = CLASES.find(x=>x.id===id);
+  box.querySelectorAll('[data-campo]').forEach(el => c[el.dataset.campo] = el.value);
+  try {
+    await db.collection('clases').doc(id).set(c, { merge: true });
+    toast('Clase guardada');
+  } catch (e) { toast('No se pudo guardar la clase: '+e.message, true); }
+}
+function agregarClase() {
+  const id = 'c_' + Date.now();
+  CLASES.push({ id, orden: CLASES.length, estado:'Próxima', titulo:'Nueva clase', descripcion:'', capitulo:'', fecha:'', link:'' });
+  renderListaClases();
+}
+async function eliminarClase(id) {
+  if (!confirm('¿Eliminar esta clase de la tabla?')) return;
+  CLASES = CLASES.filter(c=>c.id!==id);
+  try { await db.collection('clases').doc(id).delete(); } catch(e) {}
+  renderListaClases();
+  toast('Clase eliminada');
+}
+
+// ── INSCRIPCIONES ──
+async function cargarInscripciones() {
+  try {
+    const snap = await db.collection('inscripciones').orderBy('fecha','desc').limit(50).get();
+    const cont = document.getElementById('listaInscripciones');
+    if (snap.empty) { cont.innerHTML = '<p style="color:var(--suave)">Aún no hay inscripciones.</p>'; return; }
+    cont.innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr style="text-align:left;font-size:0.72rem;text-transform:uppercase;color:var(--suave)"><th style="padding:0.4rem 0">Nombre</th><th>Correo</th><th>Ciudad</th><th>Libro</th></tr></thead><tbody>' +
+      snap.docs.map(d => { const x=d.data(); return `<tr style="border-top:1px solid var(--gris)"><td style="padding:0.5rem 0">${x.nombre||''}</td><td>${x.email||''}</td><td>${x.ciudad||''}</td><td>${x.libro||''}</td></tr>`; }).join('') +
+      '</tbody></table>';
+  } catch(e) {
+    document.getElementById('listaInscripciones').innerHTML = '<p style="color:var(--suave)">No se pudo cargar (revisa Firebase).</p>';
+  }
+}
+</script>
+</body>
+</html>
