@@ -17,6 +17,8 @@ const DEFAULT_CONFIG = {
   logoIcono: "✝",
   logoTitulo: "Conozcamos la Biblia",
   logoSubtitulo: "Diócesis de Socorro y San Gil",
+  logoImagenURL: "",   // logo del curso (reemplaza el ícono ✝ si se sube uno)
+  escudoImagenURL: "", // escudo de la Diócesis o de la Parroquia
 
   // ── Portada (hero) ──
   heroEtiqueta: "Diócesis de Socorro y San Gil · Colombia",

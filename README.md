@@ -53,6 +53,30 @@ Esto deja el sitio visible para cualquiera, pero solo tú (con tu usuario
 admin) puedes editar contenido. Cualquier visitante puede inscribirse, pero
 solo tú puedes ver o borrar inscripciones.
 
+## 2.1 Habilitar Firebase Storage (para subir el logo y el escudo)
+
+1. En Firebase Console, entra a **Compilación → Storage** → *Comenzar* →
+   sigue el asistente (modo producción está bien) → elige la misma región
+   que usaste para Firestore.
+2. En la pestaña **Rules** de Storage, pega esto y publica:
+
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /logos/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+                    && request.resource.size < 3 * 1024 * 1024;
+    }
+  }
+}
+```
+
+Esto permite que cualquiera VEA el logo (para que cargue en el sitio
+público), pero solo tú, con sesión iniciada, puedas subir uno nuevo — y
+limita cada imagen a 3 MB para no gastar espacio de más.
+
 ## 3. Publicar en GitHub Pages
 
 Igual que hicimos con Club de Lectura, desde tu cuenta `paginabierta`:

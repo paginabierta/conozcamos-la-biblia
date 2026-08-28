@@ -239,6 +239,7 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
 <nav>
   <a class="nav-logo" href="#hero">
     <span class="nav-cruz" id="navIcono">✝</span>
+    <img id="navEscudo" src="" alt="Escudo" style="display:none;height:34px;width:auto;border-radius:4px;margin-left:0.3rem">
     <div class="nav-logo-txt" id="navTitulo">Conozcamos la Biblia<span id="navSub">Diócesis de Socorro y San Gil</span></div>
   </a>
   <ul class="nav-links">
@@ -369,6 +370,7 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
     <div class="footer-brand">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.8rem">
         <span style="font-size:1.3rem;color:var(--oro)" id="footIcono">✝</span>
+        <img id="footEscudo" src="" alt="Escudo" style="display:none;height:32px;width:auto;border-radius:4px">
         <div style="font-family:var(--f-titulo);font-size:1rem;color:white;font-weight:700;line-height:1.2" id="footTitulo">
           <div style="font-family:var(--f-texto);font-size:0.65rem;font-weight:400;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase" id="footSub"></div>
         </div>
@@ -423,6 +425,7 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="defaults.js"></script>
 <script>
@@ -456,6 +459,25 @@ function aplicarConfig(cfg) {
   document.getElementById('footIcono').textContent = cfg.logoIcono;
   document.getElementById('footTitulo').childNodes[0].textContent = cfg.logoTitulo + ' ';
   document.getElementById('footSub').textContent = cfg.logoSubtitulo;
+  const navIc = document.getElementById('navIcono'), footIc = document.getElementById('footIcono');
+  const navEsc = document.getElementById('navEscudo'), footEsc = document.getElementById('footEscudo');
+  if (cfg.logoImagenURL) {
+    navIc.style.display = 'none'; footIc.style.display = 'none';
+    // reutiliza el ícono como imagen del logo del curso
+    navIc.parentElement.querySelectorAll('img.logo-curso').forEach(e=>e.remove());
+    const imgN = document.createElement('img'); imgN.src = cfg.logoImagenURL; imgN.alt = 'Logo'; imgN.className = 'logo-curso';
+    imgN.style.cssText = 'height:36px;width:auto;border-radius:6px;margin-right:0.3rem';
+    navIc.after(imgN);
+    document.getElementById('footTitulo').parentElement.querySelectorAll('img.logo-curso').forEach(e=>e.remove());
+    const imgF = document.createElement('img'); imgF.src = cfg.logoImagenURL; imgF.alt = 'Logo'; imgF.className = 'logo-curso';
+    imgF.style.cssText = 'height:32px;width:auto;border-radius:6px';
+    footIc.after(imgF);
+  } else {
+    navIc.style.display = ''; footIc.style.display = '';
+    document.querySelectorAll('img.logo-curso').forEach(e=>e.remove());
+  }
+  if (cfg.escudoImagenURL) { navEsc.src = cfg.escudoImagenURL; navEsc.style.display = 'inline-block'; footEsc.src = cfg.escudoImagenURL; footEsc.style.display = 'inline-block'; }
+  else { navEsc.style.display = 'none'; footEsc.style.display = 'none'; }
 
   document.getElementById('heroEtiqueta').textContent = cfg.heroEtiqueta;
   document.getElementById('heroTitulo').innerHTML = cfg.heroTitulo.replace(cfg.heroTituloEnfasis, '<em>'+cfg.heroTituloEnfasis+'</em>');
