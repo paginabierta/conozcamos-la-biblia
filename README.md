@@ -53,29 +53,18 @@ Esto deja el sitio visible para cualquiera, pero solo tú (con tu usuario
 admin) puedes editar contenido. Cualquier visitante puede inscribirse, pero
 solo tú puedes ver o borrar inscripciones.
 
-## 2.1 Habilitar Firebase Storage (para subir el logo y el escudo)
+## 2.1 Subir el logo del curso y el escudo de la Diócesis/Parroquia
 
-1. En Firebase Console, entra a **Compilación → Storage** → *Comenzar* →
-   sigue el asistente (modo producción está bien) → elige la misma región
-   que usaste para Firestore.
-2. En la pestaña **Rules** de Storage, pega esto y publica:
+No usamos Firebase Storage para esto (exige el plan de pago Blaze). En su
+lugar, en el panel (pestaña Apariencia → "Imágenes de marca"):
 
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /logos/{fileName} {
-      allow read: if true;
-      allow write: if request.auth != null
-                    && request.resource.size < 3 * 1024 * 1024;
-    }
-  }
-}
-```
+1. Sube la imagen a Google Drive.
+2. Clic derecho sobre el archivo → Compartir → cambia a "Cualquiera con
+   el enlace" → Copiar enlace.
+3. Pega ese link en el campo correspondiente ("Logo del curso" o
+   "Escudo de la Diócesis o Parroquia") y dale Guardar apariencia.
 
-Esto permite que cualquiera VEA el logo (para que cargue en el sitio
-público), pero solo tú, con sesión iniciada, puedas subir uno nuevo — y
-limita cada imagen a 3 MB para no gastar espacio de más.
+Igual que con la foto del Padre Álvaro o las carátulas de los libros.
 
 ## 3. Publicar en GitHub Pages
 

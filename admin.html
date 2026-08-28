@@ -142,23 +142,16 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
       </div>
       <div class="card">
         <h2>Imágenes de marca</h2>
+        <p style="font-size:0.82rem;color:var(--suave);margin-bottom:1rem">Sube la imagen a Google Drive → clic derecho → Compartir → "Cualquiera con el enlace" → pega ese link aquí.</p>
         <div class="fg">
           <label>Logo del curso (reemplaza el ícono ✝)</label>
           <div id="prevLogoImagen" class="img-preview">Sin imagen — se usa el ícono ✝ por ahora</div>
-          <input type="file" id="fileLogoImagen" accept="image/*" style="margin-top:0.5rem">
-          <div style="display:flex;gap:0.6rem;margin-top:0.5rem">
-            <button type="button" class="btn-add" onclick="subirImagenLogo('logoImagenURL','fileLogoImagen','prevLogoImagen')">Subir imagen</button>
-            <button type="button" class="btn-del" onclick="quitarImagenLogo('logoImagenURL','prevLogoImagen')">Quitar imagen</button>
-          </div>
+          <input type="text" id="logoImagenURL" placeholder="https://drive.google.com/..." style="margin-top:0.5rem" oninput="mostrarPreview('prevLogoImagen', this.value, 'el ícono ✝')">
         </div>
         <div class="fg" style="margin-top:1.2rem">
           <label>Escudo de la Diócesis o de la Parroquia</label>
           <div id="prevEscudoImagen" class="img-preview">Sin imagen — no se muestra ningún escudo por ahora</div>
-          <input type="file" id="fileEscudoImagen" accept="image/*" style="margin-top:0.5rem">
-          <div style="display:flex;gap:0.6rem;margin-top:0.5rem">
-            <button type="button" class="btn-add" onclick="subirImagenLogo('escudoImagenURL','fileEscudoImagen','prevEscudoImagen')">Subir imagen</button>
-            <button type="button" class="btn-del" onclick="quitarImagenLogo('escudoImagenURL','prevEscudoImagen')">Quitar imagen</button>
-          </div>
+          <input type="text" id="escudoImagenURL" placeholder="https://drive.google.com/..." style="margin-top:0.5rem" oninput="mostrarPreview('prevEscudoImagen', this.value, 'ningún escudo')">
         </div>
       </div>
       <button class="btn-guardar" onclick="guardarApariencia()">Guardar apariencia</button>
@@ -290,7 +283,6 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="defaults.js"></script>
 <script>
@@ -378,38 +370,6 @@ function mostrarPreview(elId, url, textoVacio) {
   else el.innerHTML = `Sin imagen — se usa ${textoVacio} por ahora`;
 }
 
-async function subirImagenLogo(campo, inputId, previewId) {
-  const input = document.getElementById(inputId);
-  const file = input.files[0];
-  if (!file) { toast('Primero selecciona un archivo', true); return; }
-  if (file.size > 3 * 1024 * 1024) { toast('La imagen pesa más de 3 MB — usa una más liviana', true); return; }
-  toast('Subiendo imagen…');
-  try {
-    const ext = file.name.split('.').pop();
-    const ref = storage.ref().child('logos/' + campo + '_' + Date.now() + '.' + ext);
-    await ref.put(file);
-    const url = await ref.getDownloadURL();
-    await db.collection('config').doc('site').set({ [campo]: url }, { merge: true });
-    CFG[campo] = url;
-    mostrarPreview(previewId, url, campo === 'logoImagenURL' ? 'el ícono ✝' : 'ningún escudo');
-    input.value = '';
-    toast('Imagen guardada');
-  } catch (e) {
-    toast('No se pudo subir la imagen: ' + e.message, true);
-  }
-}
-
-async function quitarImagenLogo(campo, previewId) {
-  try {
-    await db.collection('config').doc('site').set({ [campo]: '' }, { merge: true });
-    CFG[campo] = '';
-    mostrarPreview(previewId, '', campo === 'logoImagenURL' ? 'el ícono ✝' : 'ningún escudo');
-    toast('Imagen quitada');
-  } catch (e) {
-    toast('No se pudo quitar la imagen: ' + e.message, true);
-  }
-}
-
 async function guardarSeccion(campos, nombreSeccion) {
   const datos = {};
   campos.forEach(id => {
@@ -425,7 +385,7 @@ async function guardarSeccion(campos, nombreSeccion) {
   }
 }
 
-function guardarApariencia(){ guardarSeccion(['colorRojo','colorAzul','colorOro','colorCrema','fuenteEsquema','logoIcono','logoTitulo','logoSubtitulo'], 'apariencia'); }
+function guardarApariencia(){ guardarSeccion(['colorRojo','colorAzul','colorOro','colorCrema','fuenteEsquema','logoIcono','logoTitulo','logoSubtitulo','logoImagenURL','escudoImagenURL'], 'apariencia'); }
 function guardarPortada(){ guardarSeccion(['heroEtiqueta','heroTitulo','heroTituloEnfasis','heroSubtitulo','heroAutor','heroStat1Num','heroStat1Label','heroStat2Num','heroStat2Label','heroStat3Num','heroStat3Label'], 'portada'); }
 function guardarHomenaje(){ guardarSeccion(['homenajeNombre','homenajeCargo','homenajeTexto','homenajeFoto','versiculoTexto','versiculoCita'], 'homenaje'); }
 function guardarClasesGeneral(){ guardarSeccion(['meetFrecuencia','meetDuracion','meetDispositivos','meetAcceso','meetContacto','meetLink','comoTitulo','comoSub'], 'datos de clases'); }
