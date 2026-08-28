@@ -585,11 +585,11 @@ async function cargarSitio() {
     const cfgDoc = await db.collection('config').doc('site').get();
     if (cfgDoc.exists) cfg = Object.assign({}, DEFAULT_CONFIG, cfgDoc.data());
 
-    const modSnap = await db.collection('modulos').orderBy('testamento').orderBy('orden').get();
-    if (!modSnap.empty) modulos = modSnap.docs.map(d => d.data());
+    const modSnap = await db.collection('modulos').get();
+    if (!modSnap.empty) modulos = modSnap.docs.map(d => d.data()).sort((a,b) => (a.testamento||'').localeCompare(b.testamento||'') || (a.orden||0)-(b.orden||0));
 
-    const clSnap = await db.collection('clases').orderBy('orden').get();
-    if (!clSnap.empty) clases = clSnap.docs.map(d => d.data());
+    const clSnap = await db.collection('clases').get();
+    if (!clSnap.empty) clases = clSnap.docs.map(d => d.data()).sort((a,b) => (a.orden||0)-(b.orden||0));
   } catch (err) {
     console.warn('No se pudo conectar a Firebase — mostrando contenido por defecto.', err);
   }
