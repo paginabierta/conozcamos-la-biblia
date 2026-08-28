@@ -100,6 +100,7 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
     <button class="tab-btn" data-tab="clases">Clases en vivo</button>
     <button class="tab-btn" data-tab="libro">Libro</button>
     <button class="tab-btn" data-tab="contacto">Contacto</button>
+    <button class="tab-btn" data-tab="certificados">Certificados</button>
   </div>
 
   <main>
@@ -275,7 +276,57 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
       </div>
       <button class="btn-guardar" onclick="guardarContacto()">Guardar contacto</button>
     </section>
+
+    <!-- CERTIFICADOS -->
+    <section class="seccion" id="tab-certificados">
+      <div class="card">
+        <h2>Generar certificado</h2>
+        <p style="font-size:0.82rem;color:var(--suave);margin-bottom:1rem">Escribe los datos y descarga el PDF ya diseñado, listo para enviar o imprimir.</p>
+        <div class="fg"><label>Nombre completo del participante</label><input type="text" id="certNombre" placeholder="Ej: María Fernanda Rojas Pinzón"></div>
+        <div class="grid2">
+          <div class="fg"><label>Curso / módulo completado</label><input type="text" id="certModulo" value="Curso Bíblico II · Nuevo Testamento"></div>
+          <div class="fg"><label>Fecha</label><input type="text" id="certFecha" placeholder="Ej: 15 de noviembre de 2026"></div>
+        </div>
+        <div class="grid2">
+          <div class="fg"><label>Firma (nombre)</label><input type="text" id="certFirmaNombre" value="Pbro. Herwin Danilo Almeida González"></div>
+          <div class="fg"><label>Firma (cargo)</label><input type="text" id="certFirmaCargo" value="Párroco · San Pedro Apóstol, Vado Real"></div>
+        </div>
+        <button class="btn-guardar" onclick="generarCertificado()" id="btnCertGenerar">Generar y descargar PDF</button>
+      </div>
+    </section>
   </main>
+</div>
+
+<!-- Plantilla del certificado — oculta, se convierte a imagen y luego a PDF -->
+<div id="certTemplate" style="position:fixed;left:-9999px;top:0;width:1400px;height:990px;background:#FDF8EE;font-family:'DM Sans',sans-serif;box-sizing:border-box;padding:38px;">
+  <div style="width:100%;height:100%;border:3px solid #C9A84C;box-sizing:border-box;padding:50px 70px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;">
+    <div style="position:absolute;top:14px;left:14px;right:14px;bottom:14px;border:1px solid #C9A84C;pointer-events:none;"></div>
+    <img id="certEscudo" src="" style="display:none;height:80px;margin-bottom:14px;border-radius:6px;">
+    <div id="certIconoFallback" style="font-size:42px;color:#8B1A1A;margin-bottom:6px;">✝</div>
+    <div style="font-size:15px;letter-spacing:3px;color:#C9A84C;font-weight:700;text-transform:uppercase;">Diócesis de Socorro y San Gil</div>
+    <div style="font-family:'Fraunces',serif;font-weight:900;font-style:italic;font-size:44px;color:#1A2D6B;margin-top:22px;">Certificado de Participación</div>
+    <div style="width:110px;height:3px;background:#C9A84C;margin:22px 0;"></div>
+    <div style="font-size:18px;color:#6B5B3A;">Se certifica que</div>
+    <div id="certNombreOut" style="font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:36px;color:#8B1A1A;margin:16px 0;">Nombre del participante</div>
+    <div id="certTextoOut" style="font-size:17px;color:#1A1208;max-width:850px;line-height:1.7;">
+      participó del <strong id="certModuloOut">Curso Bíblico II · Nuevo Testamento</strong>, dentro del programa
+      «Conozcamos la Biblia», basado en la obra del Pbro. Álvaro Santamaría Díaz, desarrollado por la
+      Parroquia San Pedro Apóstol de Vado Real, Suaita.
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:30px;">
+      <div style="text-align:left;">
+        <div style="font-size:14px;color:#6B5B3A;">Fecha</div>
+        <div id="certFechaOut" style="font-size:16px;color:#1A1208;font-weight:600;">—</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:260px;border-top:1.5px solid #1A2D6B;padding-top:8px;">
+          <div id="certFirmaNombreOut" style="font-family:'Fraunces',serif;font-weight:700;color:#1A2D6B;font-size:17px;">Pbro. Herwin Danilo Almeida González</div>
+          <div id="certFirmaCargoOut" style="font-size:13px;color:#6B5B3A;">Párroco</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -284,6 +335,8 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="defaults.js"></script>
 <script>
 let CFG = Object.assign({}, DEFAULT_CONFIG);
@@ -560,6 +613,57 @@ async function cargarInscripciones() {
   } catch(e) {
     document.getElementById('listaInscripciones').innerHTML = '<p style="color:var(--suave)">No se pudo cargar (revisa Firebase).</p>';
   }
+}
+
+// ── CERTIFICADOS ──
+async function generarCertificado() {
+  const nombre = document.getElementById('certNombre').value.trim();
+  if (!nombre) { toast('Escribe el nombre del participante', true); return; }
+  const modulo = document.getElementById('certModulo').value.trim() || 'Curso Bíblico II · Nuevo Testamento';
+  let fecha = document.getElementById('certFecha').value.trim();
+  if (!fecha) {
+    const hoy = new Date();
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    fecha = `${hoy.getDate()} de ${meses[hoy.getMonth()]} de ${hoy.getFullYear()}`;
+  }
+  const firmaNombre = document.getElementById('certFirmaNombre').value.trim() || 'Pbro. Herwin Danilo Almeida González';
+  const firmaCargo = document.getElementById('certFirmaCargo').value.trim() || 'Párroco';
+
+  document.getElementById('certNombreOut').textContent = nombre;
+  document.getElementById('certModuloOut').textContent = modulo;
+  document.getElementById('certFechaOut').textContent = fecha;
+  document.getElementById('certFirmaNombreOut').textContent = firmaNombre;
+  document.getElementById('certFirmaCargoOut').textContent = firmaCargo;
+
+  const escudoEl = document.getElementById('certEscudo');
+  const iconoEl = document.getElementById('certIconoFallback');
+  const escudoURL = CFG.escudoImagenURL || CFG.logoImagenURL;
+  if (escudoURL) {
+    escudoEl.src = urlImagen(escudoURL);
+    escudoEl.style.display = 'inline-block';
+    iconoEl.style.display = 'none';
+  } else {
+    escudoEl.style.display = 'none';
+    iconoEl.style.display = 'block';
+  }
+
+  const btn = document.getElementById('btnCertGenerar');
+  btn.disabled = true; btn.textContent = 'Generando…';
+  try {
+    // Espera a que la imagen del escudo (si hay) cargue antes de capturar
+    if (escudoURL) await new Promise(res => { escudoEl.onload = res; escudoEl.onerror = res; setTimeout(res, 1500); });
+    const canvas = await html2canvas(document.getElementById('certTemplate'), { scale: 2, useCORS: true, backgroundColor: '#FDF8EE' });
+    const img = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1400, 990] });
+    pdf.addImage(img, 'JPEG', 0, 0, 1400, 990);
+    const nombreArchivo = 'Certificado_' + nombre.replace(/[^a-zA-Z0-9]+/g, '_') + '.pdf';
+    pdf.save(nombreArchivo);
+    toast('Certificado descargado');
+  } catch (e) {
+    toast('No se pudo generar el certificado: ' + e.message, true);
+  }
+  btn.disabled = false; btn.textContent = 'Generar y descargar PDF';
 }
 </script>
 </body>
