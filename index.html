@@ -408,6 +408,7 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
       <div class="fg"><label>Nombre completo</label><input type="text" id="rNombre" placeholder="Tu nombre"></div>
       <div class="fg"><label>Correo electrónico</label><input type="email" id="rEmail" placeholder="tucorreo@ejemplo.com"></div>
       <div class="fg"><label>Ciudad y país</label><input type="text" id="rCiudad" placeholder="Ej: Socorro, Colombia"></div>
+      <div class="fg"><label>Teléfono / WhatsApp (opcional)</label><input type="tel" id="rTelefono" placeholder="Ej: 300 123 4567"></div>
       <div class="fg"><label>Libro de interés</label>
         <select id="rLibro"><option value="">Selecciona…</option><option>Libro I · Antiguo Testamento</option><option>Libro II · Nuevo Testamento (en curso)</option><option>Ambos libros</option></select>
       </div>
@@ -609,6 +610,7 @@ document.getElementById('btnOk').addEventListener('click', () => {
   db.collection('inscripciones').add({
     nombre:n, email:e,
     ciudad: document.getElementById('rCiudad').value.trim(),
+    telefono: document.getElementById('rTelefono').value.trim(),
     libro: document.getElementById('rLibro').value,
     rol: document.getElementById('rRol').value,
     fecha: firebase.firestore.FieldValue.serverTimestamp()

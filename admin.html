@@ -548,8 +548,14 @@ async function cargarInscripciones() {
     const snap = await db.collection('inscripciones').orderBy('fecha','desc').limit(50).get();
     const cont = document.getElementById('listaInscripciones');
     if (snap.empty) { cont.innerHTML = '<p style="color:var(--suave)">Aún no hay inscripciones.</p>'; return; }
-    cont.innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr style="text-align:left;font-size:0.72rem;text-transform:uppercase;color:var(--suave)"><th style="padding:0.4rem 0">Nombre</th><th>Correo</th><th>Ciudad</th><th>Libro</th></tr></thead><tbody>' +
-      snap.docs.map(d => { const x=d.data(); return `<tr style="border-top:1px solid var(--gris)"><td style="padding:0.5rem 0">${x.nombre||''}</td><td>${x.email||''}</td><td>${x.ciudad||''}</td><td>${x.libro||''}</td></tr>`; }).join('') +
+    const linkWA = tel => {
+      if (!tel) return '';
+      let d = tel.replace(/\D/g, '');
+      if (d.length === 10) d = '57' + d; // agrega indicativo de Colombia si falta
+      return `<a href="https://wa.me/${d}" target="_blank" style="color:#059669;font-weight:600;text-decoration:none">💬 ${tel}</a>`;
+    };
+    cont.innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr style="text-align:left;font-size:0.72rem;text-transform:uppercase;color:var(--suave)"><th style="padding:0.4rem 0">Nombre</th><th>Correo</th><th>Teléfono</th><th>Ciudad</th><th>Libro</th></tr></thead><tbody>' +
+      snap.docs.map(d => { const x=d.data(); return `<tr style="border-top:1px solid var(--gris)"><td style="padding:0.5rem 0">${x.nombre||''}</td><td>${x.email||''}</td><td>${linkWA(x.telefono)}</td><td>${x.ciudad||''}</td><td>${x.libro||''}</td></tr>`; }).join('') +
       '</tbody></table>';
   } catch(e) {
     document.getElementById('listaInscripciones').innerHTML = '<p style="color:var(--suave)">No se pudo cargar (revisa Firebase).</p>';
