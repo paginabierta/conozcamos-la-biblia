@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cargar contenido — Conozcamos la Biblia</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1A2D6B;--oro:#C9A84C;--rojo:#8B1A1A;--crema:#FDF8EE;--gris:#F2EDE3;--suave:#6B5B3A;--ok:#059669;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--crema);color:#1A1208;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.box{background:white;border-radius:16px;padding:2.5rem;max-width:560px;width:100%;box-shadow:0 8px 40px rgba(26,45,107,0.1);}
+h1{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--azul);margin-bottom:0.4rem;}
+p{font-size:0.88rem;color:var(--suave);line-height:1.6;margin-bottom:1rem;}
+#loginBox input{width:100%;padding:0.75rem 1rem;border:1.5px solid var(--gris);border-radius:8px;font-size:0.9rem;margin-bottom:0.7rem;font-family:inherit;}
+button{width:100%;background:var(--azul);color:white;border:none;border-radius:8px;padding:0.85rem;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:0.5rem;}
+button:hover{background:#2E4BA8;}
+button:disabled{opacity:0.5;cursor:default;}
+ul{margin:0 0 1rem 1.2rem;font-size:0.85rem;color:var(--suave);}
+#panelCarga{display:none;}
+#log{margin-top:1.2rem;font-size:0.82rem;background:var(--gris);border-radius:8px;padding:1rem;max-height:220px;overflow-y:auto;display:none;line-height:1.6;}
+.ok{color:var(--ok);font-weight:700;}
+.err{color:var(--rojo);font-weight:700;}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>✝ Cargar contenido del Nuevo Testamento</h1>
+  <p>Esta página sube de una sola vez, a tu Firestore, los 4 módulos reales (capítulos 1-4 del libro del P. Álvaro) y las 20 clases ya organizadas. Solo se usa una vez — después edita todo desde <code>admin.html</code>.</p>
+
+  <div id="loginBox">
+    <input type="email" id="loginEmail" placeholder="Tu correo de administrador">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+    <button id="btnLogin">Ingresar</button>
+    <p id="errorLogin" style="color:var(--rojo);display:none"></p>
+  </div>
+
+  <div id="panelCarga">
+    <p>Sesión iniciada. Esto va a <strong>reemplazar</strong> los módulos y clases del Nuevo Testamento en tu sitio (los del Antiguo Testamento se dejan igual, como marcador de posición hasta que escanees ese libro). ¿Listo?</p>
+    <button id="btnCargar">Cargar módulos y clases del NT</button>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="defaults.js"></script>
+<script>
+auth.onAuthStateChanged(user => {
+  document.getElementById('loginBox').style.display = user ? 'none' : 'block';
+  document.getElementById('panelCarga').style.display = user ? 'block' : 'none';
+});
+document.getElementById('btnLogin').addEventListener('click', () => {
+  auth.signInWithEmailAndPassword(
+    document.getElementById('loginEmail').value.trim(),
+    document.getElementById('loginPass').value
+  ).catch(err => {
+    document.getElementById('errorLogin').textContent = 'No se pudo ingresar: ' + err.message;
+    document.getElementById('errorLogin').style.display = 'block';
+  });
+});
+
+// ── Módulos reales del NT (capítulos 1-4 del libro escaneado) ──
+const MODULOS_NT_REALES = [
+  {
+    id: 'nt-1', testamento: 'NT', orden: 1, icono: '✝️',
+    titulo: 'Introducción al Nuevo Testamento',
+    descripcion: 'Por qué el A.T. es preparación necesaria para el N.T., la finalidad del N.T. centrada en Jesucristo, y cuándo y dónde nacieron estos escritos.',
+    subtemas: [
+      'Importancia del estudio del N.T. y su relación con el A.T.',
+      'Finalidad y corazón del Nuevo Testamento: Jesucristo',
+      'Cuándo y dónde nació el N.T.'
+    ],
+    clases: 1, horas: 1.5, estado: 'Completado'
+  },
+  {
+    id: 'nt-2', testamento: 'NT', orden: 2, icono: '🗺️',
+    titulo: 'Escenario histórico y geográfico',
+    descripcion: 'El mundo en que nacieron los escritos cristianos: Palestina bajo Roma, la sociedad judía y sus grupos, y el mundo pagano del Imperio.',
+    subtemas: [
+      'El mundo judío de Palestina: geografía, condiciones sociales y grupos',
+      'Grupos religiosos (fariseos, saduceos, esenios) y políticos; vida religiosa',
+      'El mundo pagano: el Imperio Romano y sus religiones'
+    ],
+    clases: 3, horas: 4.5, estado: 'En curso'
+  },
+  {
+    id: 'nt-3', testamento: 'NT', orden: 3, icono: '✍️',
+    titulo: 'San Pablo y sus cartas',
+    descripcion: 'El apóstol de los gentiles: quién fue, las ideas maestras de su doctrina, y un recorrido detenido por cada una de sus trece cartas.',
+    subtemas: [
+      '¿Quién era Pablo? Ideas maestras de su doctrina',
+      'Tesalonicenses, Corintios y Gálatas',
+      'Romanos, cartas de la cautividad y cartas pastorales'
+    ],
+    clases: 12, horas: 18, estado: 'Próximamente'
+  },
+  {
+    id: 'nt-4', testamento: 'NT', orden: 4, icono: '📜',
+    titulo: 'Hebreos y Cartas Católicas',
+    descripcion: 'La carta a los Hebreos y las cartas de Santiago, Pedro y Judas: la fe apostólica dirigida a las primeras comunidades cristianas.',
+    subtemas: [
+      'Carta a los Hebreos: Cristo, sumo sacerdote eterno',
+      'Carta de Santiago: la fe que se hace obras',
+      'Primera y segunda de Pedro, y carta de Judas'
+    ],
+    clases: 4, horas: 6, estado: 'Próximamente'
+  }
+];
+
+// ── 20 clases programadas (capítulos 1-4) ──
+const CLASES_NT_REALES = [
+  { orden:0,  estado:'Grabada', titulo:'Importancia del N.T. y por qué estudiar la Biblia', descripcion:'El A.T. como preparación necesaria; la finalidad del N.T. centrada en Jesucristo', capitulo:'NT · Cap. 1', fecha:'18 jun · pasada', link:'' },
+  { orden:1,  estado:'Grabada', titulo:'El mundo judío de Palestina', descripcion:'Geografía, condiciones sociales y grupos sociales del pueblo judío en tiempos de Jesús', capitulo:'NT · Cap. 2', fecha:'25 jun · pasada', link:'' },
+  { orden:2,  estado:'Próxima', titulo:'Grupos religiosos, grupos políticos y vida religiosa judía', descripcion:'Fariseos, saduceos, esenios y zelotes; los judíos después del año 70 d.C.', capitulo:'NT · Cap. 2', fecha:'Por definir', link:'' },
+  { orden:3,  estado:'Próxima', titulo:'El mundo pagano y el Imperio Romano', descripcion:'La unificación romana, las provincias y ciudades, y las religiones paganas del Imperio', capitulo:'NT · Cap. 2', fecha:'Por definir', link:'' },
+  { orden:4,  estado:'Próxima', titulo:'¿Por qué empezamos con San Pablo? ¿Quién era?', descripcion:'El apóstol más antiguo en la tradición escrita del N.T. y su historia personal', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:5,  estado:'Próxima', titulo:'Ideas maestras de la doctrina de San Pablo', descripcion:'El proyecto de Dios, el Evangelio, la fe, la justificación, la Iglesia y su concepción del tiempo', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:6,  estado:'Próxima', titulo:'Primera y segunda carta a los Tesalonicenses', descripcion:'Las cartas más antiguas de San Pablo: la venida del Señor y la vida cristiana en espera', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:7,  estado:'Próxima', titulo:'1ª Corintios (parte 1): divisiones, sabiduría y cuestiones morales', descripcion:'Una comunidad dividida; la verdadera sabiduría de la cruz frente a la sabiduría humana', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:8,  estado:'Próxima', titulo:'1ª Corintios (parte 2): matrimonio, ídolos, carismas y el amor', descripcion:'Las preguntas concretas de la comunidad y el himno a la caridad (cap. 13)', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:9,  estado:'Próxima', titulo:'1ª Corintios (parte 3): la resurrección y el cierre de la carta', descripcion:'El capítulo 15 sobre la resurrección de los muertos y las recomendaciones finales', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:10, estado:'Próxima', titulo:'Segunda carta a los Corintios', descripcion:'La reconciliación de Pablo con la comunidad y la defensa de su ministerio apostólico', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:11, estado:'Próxima', titulo:'Carta a los Gálatas', descripcion:'La libertad cristiana frente a la Ley: «para ser libres nos libertó Cristo»', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:12, estado:'Próxima', titulo:'Carta a los Romanos', descripcion:'La síntesis más densa de la teología paulina: pecado, gracia y justificación por la fe', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:13, estado:'Próxima', titulo:'Cartas de la cautividad: Filipenses y Filemón', descripcion:'Escritas desde la prisión: el gozo cristiano y la reconciliación fraterna', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:14, estado:'Próxima', titulo:'Cartas de la cautividad: Colosenses y Efesios', descripcion:'La primacía de Cristo sobre toda la creación y el misterio de la Iglesia', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:15, estado:'Próxima', titulo:'Cartas pastorales: Timoteo y Tito', descripcion:'Orientaciones para el gobierno y la vida de las primeras comunidades eclesiales', capitulo:'NT · Cap. 3', fecha:'Por definir', link:'' },
+  { orden:16, estado:'Próxima', titulo:'Carta a los Hebreos', descripcion:'Cristo, sumo y eterno sacerdote, superior a los sacerdotes y sacrificios antiguos', capitulo:'NT · Cap. 4', fecha:'Por definir', link:'' },
+  { orden:17, estado:'Próxima', titulo:'Carta de Santiago', descripcion:'La fe que se demuestra en las obras; una carta profundamente práctica y exigente', capitulo:'NT · Cap. 4', fecha:'Por definir', link:'' },
+  { orden:18, estado:'Próxima', titulo:'Primera carta de San Pedro', descripcion:'Aliento a las comunidades perseguidas y llamado a la esperanza cristiana', capitulo:'NT · Cap. 4', fecha:'Por definir', link:'' },
+  { orden:19, estado:'Próxima', titulo:'Segunda carta de San Pedro y carta de San Judas', descripcion:'Advertencias frente a los falsos maestros y exhortación a perseverar en la fe', capitulo:'NT · Cap. 4', fecha:'Por definir', link:'' }
+];
+
+document.getElementById('btnCargar').addEventListener('click', async () => {
+  const btn = document.getElementById('btnCargar');
+  const log = document.getElementById('log');
+  log.style.display = 'block';
+  btn.disabled = true;
+  const escribir = (msg, cls) => { log.innerHTML += `<div class="${cls||''}">${msg}</div>`; log.scrollTop = log.scrollHeight; };
+
+  try {
+    escribir('Subiendo módulos del Antiguo Testamento (marcador de posición)…');
+    const modulosAT = DEFAULT_MODULOS.filter(m => m.testamento === 'AT');
+    for (let i = 0; i < modulosAT.length; i++) {
+      await db.collection('modulos').doc('at-' + (i+1)).set(Object.assign({}, modulosAT[i], { orden: i+1 }));
+    }
+    escribir('✓ Módulos del A.T. listos (edítalos cuando escanees ese libro)', 'ok');
+
+    escribir('Subiendo los 4 módulos reales del Nuevo Testamento…');
+    for (const m of MODULOS_NT_REALES) {
+      const { id, ...datos } = m;
+      await db.collection('modulos').doc(id).set(datos);
+    }
+    escribir('✓ 4 módulos del N.T. cargados', 'ok');
+
+    escribir('Subiendo las 20 clases…');
+    for (let i = 0; i < CLASES_NT_REALES.length; i++) {
+      await db.collection('clases').doc('nt-clase-' + i).set(CLASES_NT_REALES[i]);
+    }
+    escribir('✓ 20 clases cargadas', 'ok');
+
+    escribir('<strong>Listo. Abre index.html y revisa cómo quedó.</strong>', 'ok');
+  } catch (err) {
+    escribir('✗ Error: ' + err.message, 'err');
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
