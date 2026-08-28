@@ -441,6 +441,16 @@ const ML = {
   1:"#EEF1FF",2:"#E0F7FA",3:"#ECFDF5",4:"#F3E8FF",5:"#FFFBEB",6:"#FEF2F2"
 };
 
+// Convierte un link de "compartir" de Google Drive en un link directo de imagen
+function urlImagen(url) {
+  if (!url) return url;
+  const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (m) return `https://lh3.googleusercontent.com/d/${m[1]}`;
+  const m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+  if (m2) return `https://lh3.googleusercontent.com/d/${m2[1]}`;
+  return url;
+}
+
 function aplicarConfig(cfg) {
   const r = document.documentElement.style;
   r.setProperty('--rojo', cfg.colorRojo);
@@ -464,18 +474,18 @@ function aplicarConfig(cfg) {
     navIc.style.display = 'none'; footIc.style.display = 'none';
     // reutiliza el ícono como imagen del logo del curso
     navIc.parentElement.querySelectorAll('img.logo-curso').forEach(e=>e.remove());
-    const imgN = document.createElement('img'); imgN.src = cfg.logoImagenURL; imgN.alt = 'Logo'; imgN.className = 'logo-curso';
+    const imgN = document.createElement('img'); imgN.src = urlImagen(cfg.logoImagenURL); imgN.alt = 'Logo'; imgN.className = 'logo-curso';
     imgN.style.cssText = 'height:36px;width:auto;border-radius:6px;margin-right:0.3rem';
     navIc.after(imgN);
     document.getElementById('footTitulo').parentElement.querySelectorAll('img.logo-curso').forEach(e=>e.remove());
-    const imgF = document.createElement('img'); imgF.src = cfg.logoImagenURL; imgF.alt = 'Logo'; imgF.className = 'logo-curso';
+    const imgF = document.createElement('img'); imgF.src = urlImagen(cfg.logoImagenURL); imgF.alt = 'Logo'; imgF.className = 'logo-curso';
     imgF.style.cssText = 'height:32px;width:auto;border-radius:6px';
     footIc.after(imgF);
   } else {
     navIc.style.display = ''; footIc.style.display = '';
     document.querySelectorAll('img.logo-curso').forEach(e=>e.remove());
   }
-  if (cfg.escudoImagenURL) { navEsc.src = cfg.escudoImagenURL; navEsc.style.display = 'inline-block'; footEsc.src = cfg.escudoImagenURL; footEsc.style.display = 'inline-block'; }
+  if (cfg.escudoImagenURL) { const u = urlImagen(cfg.escudoImagenURL); navEsc.src = u; navEsc.style.display = 'inline-block'; footEsc.src = u; footEsc.style.display = 'inline-block'; }
   else { navEsc.style.display = 'none'; footEsc.style.display = 'none'; }
 
   document.getElementById('heroEtiqueta').textContent = cfg.heroEtiqueta;
@@ -490,7 +500,7 @@ function aplicarConfig(cfg) {
   document.getElementById('homNombre').innerHTML = cfg.homenajeNombre.replace(' ', '<br>');
   document.getElementById('homCargo').textContent = cfg.homenajeCargo;
   document.getElementById('homTexto').textContent = cfg.homenajeTexto;
-  if (cfg.homenajeFoto) document.getElementById('homFoto').innerHTML = `<img src="${cfg.homenajeFoto}" alt="${cfg.homenajeNombre}">`;
+  if (cfg.homenajeFoto) document.getElementById('homFoto').innerHTML = `<img src="${urlImagen(cfg.homenajeFoto)}" alt="${cfg.homenajeNombre}">`;
 
   document.getElementById('versiculoTexto').textContent = cfg.versiculoTexto;
   document.getElementById('versiculoCita').textContent = '— ' + cfg.versiculoCita;
@@ -517,8 +527,8 @@ function aplicarConfig(cfg) {
   else { ntBtn.removeAttribute('href'); ntBtn.classList.add('prox'); ntBtn.textContent = 'Próximamente'; }
   if (cfg.libroATPdf) { atBtn.href = cfg.libroATPdf; atBtn.target = '_blank'; atBtn.classList.remove('prox'); atBtn.textContent = '↓ Descargar PDF'; }
   else { atBtn.removeAttribute('href'); atBtn.classList.add('prox'); atBtn.textContent = 'Próximamente'; }
-  if (cfg.libroNTFoto) document.getElementById('ntCover').innerHTML = `<img src="${cfg.libroNTFoto}" alt="${cfg.libroNTNombre}">`;
-  if (cfg.libroATFoto) document.getElementById('atCover').innerHTML = `<img src="${cfg.libroATFoto}" alt="${cfg.libroATNombre}">`;
+  if (cfg.libroNTFoto) document.getElementById('ntCover').innerHTML = `<img src="${urlImagen(cfg.libroNTFoto)}" alt="${cfg.libroNTNombre}">`;
+  if (cfg.libroATFoto) document.getElementById('atCover').innerHTML = `<img src="${urlImagen(cfg.libroATFoto)}" alt="${cfg.libroATNombre}">`;
 
   document.getElementById('footDescripcion').textContent = cfg.footerDescripcion;
   document.getElementById('footEmail').textContent = cfg.footerEmail;
