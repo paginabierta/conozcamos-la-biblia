@@ -52,6 +52,10 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
 .btn-del{background:rgba(139,26,26,0.08);color:var(--rojo);border:none;border-radius:6px;padding:0.4rem 0.7rem;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;}
 .btn-del:hover{background:rgba(139,26,26,0.16);}
 .item-box{border:1.5px solid var(--gris);border-radius:10px;padding:1rem;margin-bottom:0.8rem;}
+.mat-editor{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.3rem;}
+.mat-fila{display:grid;grid-template-columns:1fr 1.3fr 1.6fr auto;gap:0.4rem;align-items:center;}
+.mat-fila select, .mat-fila input{padding:0.5rem 0.6rem;border:1.5px solid var(--gris);border-radius:6px;font-size:0.78rem;font-family:inherit;}
+@media(max-width:640px){.mat-fila{grid-template-columns:1fr;}}
 .item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;}
 .item-head strong{font-size:0.82rem;color:var(--azul);}
 .tag-testamento{display:inline-flex;gap:0.3rem;margin-bottom:1rem;}
@@ -427,6 +431,33 @@ async function eliminarModulo(id) {
 }
 
 // ── CLASES ──
+function materialesHTML(c) {
+  const iconos = { video:'🎬 Video (YouTube)', diapositivas:'📊 Diapositivas', pdf:'📄 PDF', imagen:'🖼️ Imagen', enlace:'🔗 Otro enlace' };
+  const mats = c.materiales || [];
+  return `<div class="fg"><label>Materiales de apoyo</label>
+    <div class="mat-editor" data-mats-for="${c.id}">
+      ${mats.map((m,i) => `
+        <div class="mat-fila" data-mat-i="${i}">
+          <select data-mat-campo="tipo">${Object.keys(iconos).map(k=>`<option value="${k}" ${m.tipo===k?'selected':''}>${iconos[k]}</option>`).join('')}</select>
+          <input type="text" data-mat-campo="titulo" placeholder="Título (ej. Diapositivas clase 3)" value="${(m.titulo||'').replace(/"/g,'&quot;')}">
+          <input type="text" data-mat-campo="url" placeholder="Link (YouTube, Drive, Canva…)" value="${(m.url||'').replace(/"/g,'&quot;')}">
+          <button type="button" class="btn-del" onclick="quitarMaterial('${c.id}',${i})">×</button>
+        </div>`).join('')}
+    </div>
+    <button type="button" class="btn-add" style="margin-top:0.5rem" onclick="agregarMaterial('${c.id}')">+ Agregar material</button>
+  </div>`;
+}
+function agregarMaterial(claseId) {
+  const c = CLASES.find(x=>x.id===claseId);
+  if (!c.materiales) c.materiales = [];
+  c.materiales.push({ tipo:'video', titulo:'', url:'' });
+  renderListaClases();
+}
+function quitarMaterial(claseId, i) {
+  const c = CLASES.find(x=>x.id===claseId);
+  c.materiales.splice(i, 1);
+  renderListaClases();
+}
 function renderListaClases() {
   const cont = document.getElementById('listaClases');
   cont.innerHTML = CLASES.map((c,i) => `
@@ -447,6 +478,7 @@ function renderListaClases() {
         </div>
         <div class="fg"><label>Link (grabación o Meet)</label><input type="text" data-campo="link" value="${c.link||''}"></div>
       </div>
+      ${materialesHTML(c)}
       <button class="btn-guardar" onclick="guardarClase('${c.id}')">Guardar esta clase</button>
     </div>`).join('');
 }
@@ -454,6 +486,11 @@ async function guardarClase(id) {
   const box = document.querySelector(`#listaClases .item-box[data-id="${id}"]`);
   const c = CLASES.find(x=>x.id===id);
   box.querySelectorAll('[data-campo]').forEach(el => c[el.dataset.campo] = el.value);
+  c.materiales = Array.from(box.querySelectorAll('.mat-fila')).map(fila => {
+    const m = {};
+    fila.querySelectorAll('[data-mat-campo]').forEach(el => m[el.dataset.matCampo] = el.value);
+    return m;
+  }).filter(m => m.url);
   try {
     await db.collection('clases').doc(id).set(c, { merge: true });
     toast('Clase guardada');
@@ -461,7 +498,7 @@ async function guardarClase(id) {
 }
 function agregarClase() {
   const id = 'c_' + Date.now();
-  CLASES.push({ id, orden: CLASES.length, estado:'Próxima', titulo:'Nueva clase', descripcion:'', capitulo:'', fecha:'', link:'' });
+  CLASES.push({ id, orden: CLASES.length, estado:'Próxima', titulo:'Nueva clase', descripcion:'', capitulo:'', fecha:'', link:'', materiales:[] });
   renderListaClases();
 }
 async function eliminarClase(id) {

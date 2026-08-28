@@ -127,6 +127,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 300; background: rgba
 .clase-cap { font-size: 0.68rem; font-weight: 600; background: var(--gris); color: var(--suave); padding: 0.2rem 0.5rem; border-radius: 4px; }
 .clase-titulo { font-family: var(--f-titulo); font-size: 0.95rem; font-weight: 700; color: var(--azul); }
 .clase-desc-sm { font-size: 0.77rem; color: var(--suave); margin-top: 0.15rem; font-style: italic; }
+.mat-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.mat-chip { font-size: 0.7rem; font-weight: 600; background: var(--gris); color: var(--azul); padding: 0.25rem 0.6rem; border-radius: 100px; text-decoration: none; transition: all 0.15s; }
+.mat-chip:hover { background: var(--oro); color: white; }
 .btn-tabla { font-size: 0.75rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 6px; border: none; cursor: pointer; font-family: var(--f-texto); transition: all 0.2s; white-space: nowrap; text-decoration: none; display: inline-block; }
 .btn-insc { background: rgba(26,45,107,0.1); color: var(--azul); }
 .btn-insc:hover { background: rgba(26,45,107,0.18); }
@@ -527,13 +530,16 @@ function renderModulos(modulos) {
 }
 
 function renderClases(clases) {
+  const iconoMat = { video:'🎬', diapositivas:'📊', pdf:'📄', imagen:'🖼️', enlace:'🔗' };
   document.getElementById('tablaClases').innerHTML = clases.map(c => {
     const chip = c.estado === 'Grabada' ? '<span class="est-chip est-grab">Grabada ✓</span>' : '<span class="est-chip est-prox">Próxima</span>';
     const btn = c.estado === 'Grabada'
       ? `<a href="${c.link||'#'}" target="_blank" class="btn-tabla btn-ver2">Ver grabación</a>`
       : `<a href="#" class="btn-tabla btn-insc" onclick="abrirModal();return false;">Inscribirme →</a>`;
+    const mats = (c.materiales||[]).filter(m=>m.url).map(m =>
+      `<a href="${m.url}" target="_blank" class="mat-chip">${iconoMat[m.tipo]||'🔗'} ${m.titulo||m.tipo}</a>`).join('');
     return `<tr><td>${chip}</td>
-      <td><div class="clase-titulo">${c.titulo}</div><div class="clase-desc-sm">${c.descripcion}</div></td>
+      <td><div class="clase-titulo">${c.titulo}</div><div class="clase-desc-sm">${c.descripcion}</div>${mats?`<div class="mat-row">${mats}</div>`:''}</td>
       <td><span class="clase-cap">${c.capitulo}</span></td>
       <td style="font-size:0.8rem;color:var(--suave);white-space:nowrap">${c.fecha}</td>
       <td>${btn}</td></tr>`;
