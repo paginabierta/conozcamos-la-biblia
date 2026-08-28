@@ -19,6 +19,7 @@ const DEFAULT_CONFIG = {
   logoSubtitulo: "Diócesis de Socorro y San Gil",
   logoImagenURL: "",   // logo del curso (reemplaza el ícono ✝ si se sube uno)
   escudoImagenURL: "", // escudo de la Diócesis o de la Parroquia
+  certFirmaImagenURL: "", // imagen de la firma para los certificados
 
   // ── Portada (hero) ──
   heroEtiqueta: "Diócesis de Socorro y San Gil · Colombia",

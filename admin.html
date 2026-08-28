@@ -291,6 +291,12 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
           <div class="fg"><label>Firma (nombre)</label><input type="text" id="certFirmaNombre" value="Pbro. Herwin Danilo Almeida González"></div>
           <div class="fg"><label>Firma (cargo)</label><input type="text" id="certFirmaCargo" value="Párroco · San Pedro Apóstol, Vado Real"></div>
         </div>
+        <div class="fg">
+          <label>Firma (imagen, opcional)</label>
+          <div id="prevCertFirma" class="img-preview">Sin imagen — el certificado solo mostrará el nombre sobre la línea</div>
+          <input type="text" id="certFirmaImagenURL" placeholder="https://drive.google.com/..." style="margin-top:0.5rem" oninput="mostrarPreview('prevCertFirma', this.value, 'nada — solo el nombre')">
+          <small style="display:block;margin-top:0.4rem">Sube una foto de tu firma sobre fondo blanco (o recórtala con fondo transparente en PNG si sabes cómo) a Google Drive, compártela como "Cualquiera con el enlace" y pega el link aquí. Se guarda una sola vez — no hace falta pegarla en cada certificado.</small>
+        </div>
         <button class="btn-guardar" onclick="generarCertificado()" id="btnCertGenerar">Generar y descargar PDF</button>
       </div>
     </section>
@@ -320,6 +326,7 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
         <div id="certFechaOut" style="font-size:16px;color:#1A1208;font-weight:600;">—</div>
       </div>
       <div style="text-align:center;">
+        <img id="certFirmaImg" src="" style="display:none;height:65px;margin-bottom:2px;">
         <div style="width:260px;border-top:1.5px solid #1A2D6B;padding-top:8px;">
           <div id="certFirmaNombreOut" style="font-family:'Fraunces',serif;font-weight:700;color:#1A2D6B;font-size:17px;">Pbro. Herwin Danilo Almeida González</div>
           <div id="certFirmaCargoOut" style="font-size:13px;color:#6B5B3A;">Párroco</div>
@@ -415,6 +422,7 @@ function rellenarCampos(cfg) {
   });
   mostrarPreview('prevLogoImagen', cfg.logoImagenURL, 'el ícono ✝');
   mostrarPreview('prevEscudoImagen', cfg.escudoImagenURL, 'ningún escudo');
+  mostrarPreview('prevCertFirma', cfg.certFirmaImagenURL, 'nada — solo el nombre');
 }
 
 function urlImagen(url) {
@@ -647,11 +655,22 @@ async function generarCertificado() {
     iconoEl.style.display = 'block';
   }
 
+  const firmaURL = document.getElementById('certFirmaImagenURL').value.trim();
+  const firmaImg = document.getElementById('certFirmaImg');
+  if (firmaURL) { firmaImg.src = urlImagen(firmaURL); firmaImg.style.display = 'inline-block'; }
+  else { firmaImg.style.display = 'none'; }
+  // Guarda la firma para que quede lista la próxima vez, sin pedirla de nuevo
+  if (firmaURL !== (CFG.certFirmaImagenURL || '')) {
+    db.collection('config').doc('site').set({ certFirmaImagenURL: firmaURL }, { merge: true }).catch(()=>{});
+    CFG.certFirmaImagenURL = firmaURL;
+  }
+
   const btn = document.getElementById('btnCertGenerar');
   btn.disabled = true; btn.textContent = 'Generando…';
   try {
-    // Espera a que la imagen del escudo (si hay) cargue antes de capturar
-    if (escudoURL) await new Promise(res => { escudoEl.onload = res; escudoEl.onerror = res; setTimeout(res, 1500); });
+    // Espera a que las imágenes (escudo y firma) carguen antes de capturar
+    const espera = img => new Promise(res => { if (!img.src) return res(); img.onload = res; img.onerror = res; setTimeout(res, 1500); });
+    await Promise.all([espera(escudoEl), espera(firmaImg)]);
     const canvas = await html2canvas(document.getElementById('certTemplate'), { scale: 2, useCORS: true, backgroundColor: '#FDF8EE' });
     const img = canvas.toDataURL('image/jpeg', 0.95);
     const { jsPDF } = window.jspdf;
