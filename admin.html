@@ -295,7 +295,7 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
           <label>Firma (imagen, opcional)</label>
           <div id="prevCertFirma" class="img-preview">Sin imagen — el certificado solo mostrará el nombre sobre la línea</div>
           <input type="text" id="certFirmaImagenURL" placeholder="https://drive.google.com/..." style="margin-top:0.5rem" oninput="mostrarPreview('prevCertFirma', this.value, 'nada — solo el nombre')">
-          <small style="display:block;margin-top:0.4rem">Sube una foto de tu firma sobre fondo blanco (o recórtala con fondo transparente en PNG si sabes cómo) a Google Drive, compártela como "Cualquiera con el enlace" y pega el link aquí. Se guarda una sola vez — no hace falta pegarla en cada certificado.</small>
+          <small style="display:block;margin-top:0.4rem">⚠️ Los links de Google Drive no siempre funcionan aquí por restricciones de Google. Mejor sube la imagen de tu firma al repositorio de GitHub (junto a index.html) y pega el link "raw" — ver instrucciones abajo.</small>
         </div>
         <button class="btn-guardar" onclick="generarCertificado()" id="btnCertGenerar">Generar y descargar PDF</button>
       </div>
@@ -646,19 +646,22 @@ async function generarCertificado() {
   const escudoEl = document.getElementById('certEscudo');
   const iconoEl = document.getElementById('certIconoFallback');
   const escudoURL = CFG.escudoImagenURL || CFG.logoImagenURL;
+  escudoEl.crossOrigin = 'anonymous';
   if (escudoURL) {
     escudoEl.src = urlImagen(escudoURL);
     escudoEl.style.display = 'inline-block';
     iconoEl.style.display = 'none';
   } else {
+    escudoEl.removeAttribute('src');
     escudoEl.style.display = 'none';
     iconoEl.style.display = 'block';
   }
 
   const firmaURL = document.getElementById('certFirmaImagenURL').value.trim();
   const firmaImg = document.getElementById('certFirmaImg');
+  firmaImg.crossOrigin = 'anonymous';
   if (firmaURL) { firmaImg.src = urlImagen(firmaURL); firmaImg.style.display = 'inline-block'; }
-  else { firmaImg.style.display = 'none'; }
+  else { firmaImg.removeAttribute('src'); firmaImg.style.display = 'none'; }
   // Guarda la firma para que quede lista la próxima vez, sin pedirla de nuevo
   if (firmaURL !== (CFG.certFirmaImagenURL || '')) {
     db.collection('config').doc('site').set({ certFirmaImagenURL: firmaURL }, { merge: true }).catch(()=>{});
@@ -669,8 +672,19 @@ async function generarCertificado() {
   btn.disabled = true; btn.textContent = 'Generando…';
   try {
     // Espera a que las imágenes (escudo y firma) carguen antes de capturar
-    const espera = img => new Promise(res => { if (!img.src) return res(); img.onload = res; img.onerror = res; setTimeout(res, 1500); });
-    await Promise.all([espera(escudoEl), espera(firmaImg)]);
+    let firmaFallo = false, escudoFallo = false;
+    const espera = (img, marcarFallo) => new Promise(res => {
+      if (!img.src) return res();
+      img.onload = res;
+      img.onerror = () => { marcarFallo(); res(); };
+      setTimeout(res, 3000);
+    });
+    await Promise.all([
+      espera(escudoEl, () => escudoFallo = true),
+      espera(firmaImg, () => firmaFallo = true)
+    ]);
+    if (firmaFallo) { firmaImg.style.display = 'none'; toast('La firma no se pudo cargar (súbela a GitHub, no a Drive) — el certificado se generó sin ella', true); }
+    if (escudoFallo) { escudoEl.style.display = 'none'; iconoEl.style.display = 'block'; }
     const canvas = await html2canvas(document.getElementById('certTemplate'), { scale: 2, useCORS: true, backgroundColor: '#FDF8EE' });
     const img = canvas.toDataURL('image/jpeg', 0.95);
     const { jsPDF } = window.jspdf;
