@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descarga tu certificado — Conozcamos la Biblia</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1A2D6B;--oro:#C9A84C;--rojo:#8B1A1A;--crema:#FDF8EE;--gris:#F2EDE3;--suave:#6B5B3A;--ok:#059669;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--crema);color:#1A1208;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.box{background:white;border-radius:16px;padding:2.5rem;max-width:480px;width:100%;box-shadow:0 8px 40px rgba(26,45,107,0.1);}
+h1{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--azul);margin-bottom:0.4rem;text-align:center;}
+p.sub{font-size:0.85rem;color:var(--suave);margin-bottom:1.6rem;text-align:center;line-height:1.5;}
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--suave);margin-bottom:0.35rem;}
+.fg input, .fg select{width:100%;padding:0.75rem 1rem;border:1.5px solid var(--gris);border-radius:8px;font-size:0.9rem;font-family:inherit;color:#1A1208;background:white;}
+.fg input:focus, .fg select:focus{outline:none;border-color:var(--azul);}
+button{width:100%;background:var(--azul);color:white;border:none;border-radius:8px;padding:0.9rem;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:0.4rem;}
+button:hover{background:#2E4BA8;}
+button:disabled{opacity:0.55;cursor:default;}
+#msg{margin-top:1.1rem;font-size:0.85rem;padding:0.9rem 1rem;border-radius:8px;display:none;line-height:1.5;}
+#msg.ok{display:block;background:rgba(5,150,105,0.1);color:var(--ok);}
+#msg.err{display:block;background:rgba(139,26,26,0.08);color:var(--rojo);}
+.volver{display:block;text-align:center;margin-top:1.3rem;font-size:0.8rem;color:var(--suave);text-decoration:none;}
+.volver:hover{color:var(--azul);}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>✝ Descarga tu certificado</h1>
+  <p class="sub">Elige el módulo que completaste, escribe el mismo correo que usaste en el cuestionario, y tu nombre completo para el certificado.</p>
+
+  <div class="fg">
+    <label>Módulo completado</label>
+    <select id="fModulo"><option value="">Cargando módulos…</option></select>
+  </div>
+  <div class="fg">
+    <label>Correo (el mismo del cuestionario)</label>
+    <input type="email" id="fEmail" placeholder="tucorreo@ejemplo.com">
+  </div>
+  <div class="fg">
+    <label>Nombre completo (para el certificado)</label>
+    <input type="text" id="fNombre" placeholder="Tu nombre completo">
+  </div>
+  <button id="btnVerificar">Verificar y descargar certificado</button>
+  <div id="msg"></div>
+  <a class="volver" href="index.html">← Volver al sitio</a>
+</div>
+
+<!-- Plantilla del certificado — oculta, se convierte a imagen y luego a PDF -->
+<div id="certTemplate" style="position:fixed;left:-9999px;top:0;width:1400px;height:990px;background:#FDF8EE;font-family:'DM Sans',sans-serif;box-sizing:border-box;padding:38px;">
+  <div style="width:100%;height:100%;border:3px solid #C9A84C;box-sizing:border-box;padding:50px 70px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;">
+    <div style="position:absolute;top:14px;left:14px;right:14px;bottom:14px;border:1px solid #C9A84C;pointer-events:none;"></div>
+    <img id="certEscudo" src="" style="display:none;height:80px;margin-bottom:14px;border-radius:6px;">
+    <div id="certIconoFallback" style="font-size:42px;color:#8B1A1A;margin-bottom:6px;">✝</div>
+    <div style="font-size:15px;letter-spacing:3px;color:#C9A84C;font-weight:700;text-transform:uppercase;">Diócesis de Socorro y San Gil</div>
+    <div style="font-family:'Fraunces',serif;font-weight:900;font-style:italic;font-size:44px;color:#1A2D6B;margin-top:22px;">Certificado de Participación</div>
+    <div style="width:110px;height:3px;background:#C9A84C;margin:22px 0;"></div>
+    <div style="font-size:18px;color:#6B5B3A;">Se certifica que</div>
+    <div id="certNombreOut" style="font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:36px;color:#8B1A1A;margin:16px 0;">Nombre del participante</div>
+    <div id="certTextoOut" style="font-size:17px;color:#1A1208;max-width:850px;line-height:1.7;">
+      participó del <strong id="certModuloOut">Curso Bíblico II · Nuevo Testamento</strong>, dentro del programa
+      «Conozcamos la Biblia», basado en la obra del Pbro. Álvaro Santamaría Díaz, desarrollado por la
+      Parroquia San Pedro Apóstol de Vado Real, Suaita.
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:30px;">
+      <div style="text-align:left;">
+        <div style="font-size:14px;color:#6B5B3A;">Fecha</div>
+        <div id="certFechaOut" style="font-size:16px;color:#1A1208;font-weight:600;">—</div>
+      </div>
+      <div style="text-align:center;position:relative;height:360px;width:280px;">
+        <div style="position:absolute;bottom:30px;left:-90px;right:-90px;text-align:center;">
+          <img id="certFirmaImg" src="" style="display:none;max-height:300px;max-width:460px;">
+        </div>
+        <div style="position:absolute;bottom:95px;left:0;right:0;text-align:center;">
+          <div style="display:inline-block;width:260px;border-top:1.5px solid #1A2D6B;padding-top:4px;">
+            <div id="certFirmaNombreOut" style="font-family:'Fraunces',serif;font-weight:700;color:#1A2D6B;font-size:17px;">Pbro. Herwin Danilo Almeida González</div>
+            <div id="certFirmaCargoOut" style="font-size:13px;color:#6B5B3A;">Párroco</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="defaults.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+function urlImagen(url) {
+  if (!url) return url;
+  const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (m) return `https://lh3.googleusercontent.com/d/${m[1]}`;
+  const m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+  if (m2) return `https://lh3.googleusercontent.com/d/${m2[1]}`;
+  const m3 = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/);
+  if (m3) return `https://raw.githubusercontent.com/${m3[1]}/${m3[2]}/${m3[3]}`;
+  return url;
+}
+
+let CFG = Object.assign({}, DEFAULT_CONFIG);
+let MODULOS = [];
+
+function mostrarMsg(texto, tipo) {
+  const el = document.getElementById('msg');
+  el.textContent = texto;
+  el.className = tipo;
+}
+
+async function init() {
+  try {
+    const cfgDoc = await db.collection('config').doc('site').get();
+    if (cfgDoc.exists) CFG = Object.assign({}, DEFAULT_CONFIG, cfgDoc.data());
+  } catch(e) {}
+
+  try {
+    const modSnap = await db.collection('modulos').get();
+    MODULOS = modSnap.empty ? DEFAULT_MODULOS.map((m,i)=>Object.assign({id:'m'+i}, m)) : modSnap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+  } catch(e) { MODULOS = DEFAULT_MODULOS.map((m,i)=>Object.assign({id:'m'+i}, m)); }
+
+  const sel = document.getElementById('fModulo');
+  const lista = MODULOS.slice().sort((a,b)=> a.testamento===b.testamento ? a.orden-b.orden : a.testamento.localeCompare(b.testamento));
+  sel.innerHTML = '<option value="">Selecciona tu módulo…</option>' +
+    lista.map(m => `<option value="${m.id}">${m.testamento} · Cap. ${m.orden} — ${m.titulo}</option>`).join('');
+}
+init();
+
+document.getElementById('btnVerificar').addEventListener('click', async () => {
+  const modId = document.getElementById('fModulo').value;
+  const email = document.getElementById('fEmail').value.trim().toLowerCase();
+  const nombre = document.getElementById('fNombre').value.trim();
+  const btn = document.getElementById('btnVerificar');
+
+  if (!modId) { mostrarMsg('Selecciona el módulo que completaste.', 'err'); return; }
+  if (!email) { mostrarMsg('Escribe tu correo.', 'err'); return; }
+  if (!nombre) { mostrarMsg('Escribe tu nombre completo.', 'err'); return; }
+
+  btn.disabled = true; btn.textContent = 'Verificando…';
+  mostrarMsg('', '');
+  document.getElementById('msg').style.display = 'none';
+
+  try {
+    const cuestDoc = await db.collection('cuestionarios').doc(modId).get();
+    const csvUrl = cuestDoc.exists ? cuestDoc.data().csvUrl : '';
+    if (!csvUrl) {
+      mostrarMsg('Este módulo todavía no tiene cuestionario disponible para verificar. Intenta más tarde.', 'err');
+      btn.disabled = false; btn.textContent = 'Verificar y descargar certificado';
+      return;
+    }
+
+    const resp = await fetch(csvUrl);
+    if (!resp.ok) throw new Error('No se pudo leer el cuestionario');
+    const csvText = await resp.text();
+    const datos = Papa.parse(csvText, { header: true }).data;
+
+    // Encuentra la columna de correo, sin importar el idioma exacto del encabezado
+    const columnas = datos.length ? Object.keys(datos[0]) : [];
+    const colCorreo = columnas.find(c => /correo|email/i.test(c));
+    if (!colCorreo) throw new Error('No se encontró la columna de correo en el cuestionario');
+
+    const encontrado = datos.some(fila => (fila[colCorreo] || '').trim().toLowerCase() === email);
+
+    if (!encontrado) {
+      mostrarMsg('No encontramos tu respuesta en este cuestionario con ese correo. Verifica que sea el mismo que usaste al llenarlo.', 'err');
+      btn.disabled = false; btn.textContent = 'Verificar y descargar certificado';
+      return;
+    }
+
+    mostrarMsg('¡Verificado! Generando tu certificado…', 'ok');
+    await generarCertificado(nombre, MODULOS.find(m => m.id === modId));
+    mostrarMsg('¡Listo! Tu certificado se descargó.', 'ok');
+  } catch (e) {
+    mostrarMsg('Ocurrió un problema al verificar: ' + e.message, 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Verificar y descargar certificado';
+});
+
+async function generarCertificado(nombre, modulo) {
+  const hoy = new Date();
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fecha = `${hoy.getDate()} de ${meses[hoy.getMonth()]} de ${hoy.getFullYear()}`;
+  const tituloModulo = modulo ? `Curso Bíblico II · ${modulo.testamento === 'AT' ? 'Antiguo' : 'Nuevo'} Testamento · ${modulo.titulo}` : 'Curso Bíblico II · Conozcamos la Biblia';
+
+  document.getElementById('certNombreOut').textContent = nombre;
+  document.getElementById('certModuloOut').textContent = tituloModulo;
+  document.getElementById('certFechaOut').textContent = fecha;
+  document.getElementById('certFirmaNombreOut').textContent = CFG.certFirmaNombre || 'Pbro. Herwin Danilo Almeida González';
+  document.getElementById('certFirmaCargoOut').textContent = CFG.certFirmaCargo || 'Párroco · San Pedro Apóstol, Vado Real';
+
+  const escudoEl = document.getElementById('certEscudo');
+  const iconoEl = document.getElementById('certIconoFallback');
+  const escudoURL = CFG.escudoImagenURL || CFG.logoImagenURL;
+  escudoEl.crossOrigin = 'anonymous';
+  if (escudoURL) { escudoEl.src = urlImagen(escudoURL); escudoEl.style.display = 'inline-block'; iconoEl.style.display = 'none'; }
+  else { escudoEl.removeAttribute('src'); escudoEl.style.display = 'none'; iconoEl.style.display = 'block'; }
+
+  const firmaImg = document.getElementById('certFirmaImg');
+  firmaImg.crossOrigin = 'anonymous';
+  if (CFG.certFirmaImagenURL) { firmaImg.src = urlImagen(CFG.certFirmaImagenURL); firmaImg.style.display = 'inline-block'; }
+  else { firmaImg.removeAttribute('src'); firmaImg.style.display = 'none'; }
+
+  const espera = img => new Promise(res => { if (!img.src) return res(); img.onload = res; img.onerror = res; setTimeout(res, 3000); });
+  await Promise.all([espera(escudoEl), espera(firmaImg)]);
+
+  const canvas = await html2canvas(document.getElementById('certTemplate'), { scale: 2, useCORS: true, backgroundColor: '#FDF8EE' });
+  const img = canvas.toDataURL('image/jpeg', 0.95);
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [1400, 990] });
+  pdf.addImage(img, 'JPEG', 0, 0, 1400, 990);
+  pdf.save('Certificado_' + nombre.replace(/[^a-zA-Z0-9]+/g, '_') + '.pdf');
+}
+</script>
+</body>
+</html>

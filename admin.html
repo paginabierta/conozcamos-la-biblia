@@ -101,6 +101,7 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
     <button class="tab-btn" data-tab="libro">Libro</button>
     <button class="tab-btn" data-tab="contacto">Contacto</button>
     <button class="tab-btn" data-tab="certificados">Certificados</button>
+    <button class="tab-btn" data-tab="cuestionarios">Cuestionarios</button>
   </div>
 
   <main>
@@ -300,6 +301,29 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
         <button class="btn-guardar" onclick="generarCertificado()" id="btnCertGenerar">Generar y descargar PDF</button>
       </div>
     </section>
+
+    <!-- CUESTIONARIOS -->
+    <section class="seccion" id="tab-cuestionarios">
+      <div class="card">
+        <h2>Cuestionarios por módulo</h2>
+        <p style="font-size:0.82rem;color:var(--suave);margin-bottom:1rem">
+          Pega aquí el link publicado (CSV) de la hoja de respuestas de cada cuestionario de Google Forms.
+          Con eso, la gente puede verificar su propio correo en <code>certificado.html</code> y descargar su
+          certificado sin que tú tengas que generarlo uno por uno.
+        </p>
+        <div id="listaCuestionarios"></div>
+      </div>
+      <div class="card">
+        <h2>Cómo publicar la hoja de respuestas</h2>
+        <ol style="font-size:0.85rem;color:var(--suave);line-height:1.9;padding-left:1.2rem">
+          <li>Abre el Google Form del módulo → pestaña <strong>Respuestas</strong> → ícono verde de Sheets → se crea/abre la hoja de cálculo.</li>
+          <li>En esa hoja: <strong>Archivo → Compartir → Publicar en la web</strong>.</li>
+          <li>En el primer desplegable elige la hoja de <strong>Respuestas de formulario 1</strong> (o como se llame). En el segundo, elige <strong>Valores separados por comas (.csv)</strong>.</li>
+          <li>Dale <strong>Publicar</strong> → confirma → copia el link que te da.</li>
+          <li>Pégalo en el campo de ese módulo aquí arriba y dale <strong>Guardar</strong>.</li>
+        </ol>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -415,6 +439,7 @@ async function cargarTodo() {
   renderListaClases();
 
   cargarInscripciones();
+  cargarCuestionarios();
 }
 
 function rellenarCampos(cfg) {
@@ -668,11 +693,10 @@ async function generarCertificado() {
   firmaImg.crossOrigin = 'anonymous';
   if (firmaURL) { firmaImg.src = urlImagen(firmaURL); firmaImg.style.display = 'inline-block'; }
   else { firmaImg.removeAttribute('src'); firmaImg.style.display = 'none'; }
-  // Guarda la firma para que quede lista la próxima vez, sin pedirla de nuevo
-  if (firmaURL !== (CFG.certFirmaImagenURL || '')) {
-    db.collection('config').doc('site').set({ certFirmaImagenURL: firmaURL }, { merge: true }).catch(()=>{});
-    CFG.certFirmaImagenURL = firmaURL;
-  }
+  // Guarda la firma (imagen, nombre y cargo) para que la página pública certificado.html los use también
+  const datosFirma = { certFirmaImagenURL: firmaURL, certFirmaNombre: firmaNombre, certFirmaCargo: firmaCargo };
+  db.collection('config').doc('site').set(datosFirma, { merge: true }).catch(()=>{});
+  Object.assign(CFG, datosFirma);
 
   const btn = document.getElementById('btnCertGenerar');
   btn.disabled = true; btn.textContent = 'Generando…';
@@ -703,6 +727,40 @@ async function generarCertificado() {
     toast('No se pudo generar el certificado: ' + e.message, true);
   }
   btn.disabled = false; btn.textContent = 'Generar y descargar PDF';
+}
+
+// ── CUESTIONARIOS (links CSV para verificación de certificados) ──
+let CUESTIONARIOS = {};
+async function cargarCuestionarios() {
+  try {
+    const snap = await db.collection('cuestionarios').get();
+    CUESTIONARIOS = {};
+    snap.docs.forEach(d => CUESTIONARIOS[d.id] = d.data().csvUrl || '');
+  } catch(e) { CUESTIONARIOS = {}; }
+  renderListaCuestionarios();
+}
+function renderListaCuestionarios() {
+  const cont = document.getElementById('listaCuestionarios');
+  if (!MODULOS.length) { cont.innerHTML = '<p style="color:var(--suave)">Primero crea tus módulos en la pestaña Módulos.</p>'; return; }
+  const lista = MODULOS.slice().sort((a,b)=> a.testamento===b.testamento ? a.orden-b.orden : a.testamento.localeCompare(b.testamento));
+  cont.innerHTML = lista.map(m => `
+    <div class="item-box" data-mod-id="${m.id}">
+      <div class="item-head"><strong>${m.testamento} · Capítulo ${m.orden} — ${m.titulo}</strong></div>
+      <div class="fg">
+        <label>Link CSV publicado del cuestionario</label>
+        <input type="text" data-csv-input value="${(CUESTIONARIOS[m.id]||'').replace(/"/g,'&quot;')}" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
+      </div>
+      <button class="btn-guardar" onclick="guardarCuestionario('${m.id}')">Guardar este cuestionario</button>
+    </div>`).join('');
+}
+async function guardarCuestionario(modId) {
+  const box = document.querySelector(`.item-box[data-mod-id="${modId}"]`);
+  const url = box.querySelector('[data-csv-input]').value.trim();
+  try {
+    await db.collection('cuestionarios').doc(modId).set({ csvUrl: url }, { merge: true });
+    CUESTIONARIOS[modId] = url;
+    toast('Cuestionario guardado');
+  } catch (e) { toast('No se pudo guardar: ' + e.message, true); }
 }
 </script>
 </body>

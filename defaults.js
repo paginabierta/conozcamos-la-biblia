@@ -20,6 +20,8 @@ const DEFAULT_CONFIG = {
   logoImagenURL: "",   // logo del curso (reemplaza el ícono ✝ si se sube uno)
   escudoImagenURL: "", // escudo de la Diócesis o de la Parroquia
   certFirmaImagenURL: "", // imagen de la firma para los certificados
+  certFirmaNombre: "Pbro. Herwin Danilo Almeida González",
+  certFirmaCargo: "Párroco · San Pedro Apóstol, Vado Real",
 
   // ── Portada (hero) ──
   heroEtiqueta: "Diócesis de Socorro y San Gil · Colombia",

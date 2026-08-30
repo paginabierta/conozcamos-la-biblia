@@ -41,6 +41,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null;
     }
+    match /cuestionarios/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
     match /inscripciones/{doc} {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
