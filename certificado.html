@@ -127,7 +127,7 @@ async function init() {
   const sel = document.getElementById('fModulo');
   const lista = MODULOS.slice().sort((a,b)=> a.testamento===b.testamento ? a.orden-b.orden : a.testamento.localeCompare(b.testamento));
   sel.innerHTML = '<option value="">Selecciona tu módulo…</option>' +
-    lista.map(m => `<option value="${m.id}">${m.testamento} · Cap. ${m.orden} — ${m.titulo}</option>`).join('');
+    lista.map(m => `<option value="${m.id}">${m.testamento} · Módulo ${m.orden} — ${m.titulo}</option>`).join('');
 }
 init();
 

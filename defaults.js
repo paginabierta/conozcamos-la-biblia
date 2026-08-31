@@ -30,7 +30,7 @@ const DEFAULT_CONFIG = {
   heroSubtitulo: "Curso bíblico católico basado en la obra del Padre Álvaro Santamaría Díaz",
   heroAutor: "† In memoriam · Formación gratuita por Google Meet",
   heroStat1Num: "2", heroStat1Label: "Libros del P. Álvaro",
-  heroStat2Num: "12", heroStat2Label: "Capítulos",
+  heroStat2Num: "12", heroStat2Label: "Módulos",
   heroStat3Num: "∞", heroStat3Label: "Acceso gratuito",
 
   // ── Homenaje ──
@@ -93,8 +93,8 @@ const DEFAULT_MODULOS = [
 
 // ── Clases en vivo (tabla) ──
 const DEFAULT_CLASES = [
-  { estado:"Grabada", titulo:"Importancia del NT · Por qué estudiar la Biblia", descripcion:"Capítulo 1 del Padre Álvaro — introducción al Nuevo Testamento", capitulo:"NT · Cap. 1", fecha:"18 jun · pasada", link:"" },
-  { estado:"Grabada", titulo:"El mundo judío de Palestina", descripcion:"Capítulo 2 — Condiciones sociales, grupos religiosos y políticos", capitulo:"NT · Cap. 2", fecha:"25 jun · pasada", link:"" },
-  { estado:"Próxima", titulo:"El mundo pagano y las religiones del Imperio", descripcion:"Capítulo 2 — Filosofía griega, estoicos, epicúreos y cultos de misterios", capitulo:"NT · Cap. 2", fecha:"Por definir", link:"" },
-  { estado:"Próxima", titulo:"¿Por qué empezamos con San Pablo?", descripcion:"Capítulo 3 — El apóstol más antiguo en la tradición escrita", capitulo:"NT · Cap. 3", fecha:"Por definir", link:"" }
+  { estado:"Grabada", titulo:"Importancia del NT · Por qué estudiar la Biblia", descripcion:"Capítulo 1 del Padre Álvaro — introducción al Nuevo Testamento", capitulo:"NT · Módulo 1", fecha:"18 jun · pasada", link:"" },
+  { estado:"Grabada", titulo:"El mundo judío de Palestina", descripcion:"Capítulo 2 — Condiciones sociales, grupos religiosos y políticos", capitulo:"NT · Módulo 2", fecha:"25 jun · pasada", link:"" },
+  { estado:"Próxima", titulo:"El mundo pagano y las religiones del Imperio", descripcion:"Capítulo 2 — Filosofía griega, estoicos, epicúreos y cultos de misterios", capitulo:"NT · Módulo 2", fecha:"Por definir", link:"" },
+  { estado:"Próxima", titulo:"¿Por qué empezamos con San Pablo?", descripcion:"Capítulo 3 — El apóstol más antiguo en la tradición escrita", capitulo:"NT · Módulo 3", fecha:"Por definir", link:"" }
 ];

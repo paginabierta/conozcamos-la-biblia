@@ -454,6 +454,8 @@ function urlImagen(url) {
   if (m) return `https://lh3.googleusercontent.com/d/${m[1]}`;
   const m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
   if (m2) return `https://lh3.googleusercontent.com/d/${m2[1]}`;
+  const m3 = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/);
+  if (m3) return `https://raw.githubusercontent.com/${m3[1]}/${m3[2]}/${m3[3]}`;
   return url;
 }
 
@@ -550,7 +552,7 @@ function renderModulos(modulos) {
   const card = m => {
     const idx = ((m.orden-1)%6)+1;
     return `<div class="modulo-card rev" style="--mc:${MC[idx]};--ml:${ML[idx]}">
-      <div class="modulo-top"><div class="modulo-icono-wrap">${m.icono}</div><span class="modulo-num">Capítulo ${m.orden}</span></div>
+      <div class="modulo-top"><div class="modulo-icono-wrap">${m.icono}</div><span class="modulo-num">Módulo ${m.orden}</span></div>
       <div class="modulo-body">
         <h3 class="modulo-titulo">${m.titulo}</h3>
         <p class="modulo-desc">${m.descripcion}</p>

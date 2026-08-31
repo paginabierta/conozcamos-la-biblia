@@ -219,6 +219,7 @@ main{max-width:840px;margin:0 auto;padding:2rem 1.5rem 5rem;}
       <div class="card">
         <h2>Clases en vivo (Google Meet)</h2>
         <p style="font-size:0.82rem;color:var(--suave);margin-bottom:1rem">El orden de esta lista es el orden en que aparecen en la tabla del sitio.</p>
+        <button class="btn-add" onclick="corregirTextoModulo()" style="margin-bottom:1rem">🔧 Corregir "Cap." → "Módulo" en las clases ya guardadas</button>
         <div id="listaClases"></div>
         <button class="btn-add" onclick="agregarClase()">+ Agregar clase</button>
       </div>
@@ -504,7 +505,7 @@ function renderListaModulos() {
   const lista = MODULOS.filter(m=>m.testamento===filtroTestamento).sort((a,b)=>a.orden-b.orden);
   cont.innerHTML = lista.map(m => `
     <div class="item-box" data-id="${m.id}">
-      <div class="item-head"><strong>Capítulo ${m.orden} · ${m.testamento}</strong><button class="btn-del" onclick="eliminarModulo('${m.id}')">Eliminar</button></div>
+      <div class="item-head"><strong>Módulo ${m.orden} · ${m.testamento}</strong><button class="btn-del" onclick="eliminarModulo('${m.id}')">Eliminar</button></div>
       <div class="grid2">
         <div class="fg"><label>Ícono (emoji)</label><input type="text" maxlength="3" data-campo="icono" value="${m.icono||''}"></div>
         <div class="fg"><label>N.º de capítulo</label><input type="number" data-campo="orden" value="${m.orden}"></div>
@@ -591,7 +592,7 @@ function renderListaClases() {
       <div class="fg"><label>Título</label><input type="text" data-campo="titulo" value="${(c.titulo||'').replace(/"/g,'&quot;')}"></div>
       <div class="fg"><label>Descripción corta</label><input type="text" data-campo="descripcion" value="${(c.descripcion||'').replace(/"/g,'&quot;')}"></div>
       <div class="grid2">
-        <div class="fg"><label>Capítulo (ej. NT · Cap. 3)</label><input type="text" data-campo="capitulo" value="${c.capitulo||''}"></div>
+        <div class="fg"><label>Módulo (ej. NT · Módulo 3)</label><input type="text" data-campo="capitulo" value="${c.capitulo||''}"></div>
         <div class="fg"><label>Fecha y hora (texto libre)</label><input type="text" data-campo="fecha" value="${c.fecha||''}"></div>
       </div>
       <div class="grid2">
@@ -632,6 +633,22 @@ async function eliminarClase(id) {
   try { await db.collection('clases').doc(id).delete(); } catch(e) {}
   renderListaClases();
   toast('Clase eliminada');
+}
+
+async function corregirTextoModulo() {
+  if (!confirm('Esto va a revisar las ' + CLASES.length + ' clases guardadas y cambiar "Cap." por "Módulo" donde aparezca. ¿Continuar?')) return;
+  let cambiadas = 0;
+  for (const c of CLASES) {
+    if (c.capitulo && /cap\.|capítulo/i.test(c.capitulo)) {
+      c.capitulo = c.capitulo.replace(/Cap\.\s*/i, 'Módulo ').replace(/Capítulo\s*/i, 'Módulo ');
+      try {
+        await db.collection('clases').doc(c.id).set({ capitulo: c.capitulo }, { merge: true });
+        cambiadas++;
+      } catch (e) { toast('Error en una clase: ' + e.message, true); }
+    }
+  }
+  renderListaClases();
+  toast(cambiadas + ' clase(s) corregidas');
 }
 
 // ── INSCRIPCIONES ──
@@ -745,7 +762,7 @@ function renderListaCuestionarios() {
   const lista = MODULOS.slice().sort((a,b)=> a.testamento===b.testamento ? a.orden-b.orden : a.testamento.localeCompare(b.testamento));
   cont.innerHTML = lista.map(m => `
     <div class="item-box" data-mod-id="${m.id}">
-      <div class="item-head"><strong>${m.testamento} · Capítulo ${m.orden} — ${m.titulo}</strong></div>
+      <div class="item-head"><strong>${m.testamento} · Módulo ${m.orden} — ${m.titulo}</strong></div>
       <div class="fg">
         <label>Link CSV publicado del cuestionario</label>
         <input type="text" data-csv-input value="${(CUESTIONARIOS[m.id]||'').replace(/"/g,'&quot;')}" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
