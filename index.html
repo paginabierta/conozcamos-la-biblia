@@ -114,6 +114,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 300; background: rgba
 .btn-ver:hover { filter: brightness(0.94); }
 
 #clases { padding: 6rem 2.5rem; background: white; }
+.cert-banner { margin-top: 2.5rem; background: var(--crema); border: 1.5px solid rgba(201,168,76,0.4); border-radius: 14px; padding: 1.6rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+.cert-banner-h { font-family: var(--f-titulo); font-weight: 700; font-size: 1.05rem; color: var(--azul); margin-bottom: 0.3rem; }
+.cert-banner-p { font-size: 0.85rem; color: var(--suave); line-height: 1.5; max-width: 480px; }
 .clases-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
 .tabla-clases { width: 100%; border-collapse: collapse; }
 .tabla-clases thead tr { border-bottom: 2px solid var(--gris); }
@@ -252,6 +255,7 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
     <li><a href="#clases">Clases en vivo</a></li>
     <li><a href="#libro">El libro</a></li>
     <li><a href="#como">Cómo funciona</a></li>
+    <li><a href="certificado.html">🎓 Mi certificado</a></li>
   </ul>
   <a class="nav-cta" href="#" id="navInsc">Inscribirme gratis</a>
 </nav>
@@ -316,6 +320,13 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
         <thead><tr><th>Estado</th><th>Clase</th><th>Módulo</th><th>Fecha y hora</th><th></th></tr></thead>
         <tbody id="tablaClases"></tbody>
       </table>
+    </div>
+    <div class="cert-banner rev">
+      <div>
+        <p class="cert-banner-h">🎓 ¿Ya completaste el cuestionario de un módulo?</p>
+        <p class="cert-banner-p">Descarga tu certificado de participación al instante — solo necesitas el correo que usaste en el cuestionario.</p>
+      </div>
+      <a href="certificado.html" class="btn-p" style="white-space:nowrap">Descargar mi certificado →</a>
     </div>
   </div>
 </section>
@@ -390,6 +401,7 @@ footer { background: var(--azul); border-top: 3px solid var(--oro); padding: 3.5
       <h5>Contacto</h5>
       <a id="footEmail" href="#"></a>
       <a href="#homenaje">† P. Álvaro Santamaría Díaz</a>
+      <a href="certificado.html">🎓 Descargar mi certificado</a>
       <a class="admin-link" href="admin.html">Panel de administración</a>
     </div>
   </div>
